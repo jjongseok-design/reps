@@ -29,6 +29,7 @@ export default function WorkoutTabPage() {
   const [newExerciseName, setNewExerciseName] = useState('')
   const [newExerciseCategory, setNewExerciseCategory] = useState('legs')
   const [addingExercise, setAddingExercise] = useState(false)
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
   const startedAt = useRef<Date>(new Date())
   const timerRef = useRef<any>(null)
 
@@ -467,36 +468,69 @@ export default function WorkoutTabPage() {
               </div>
             </div>
             <div className="px-4 py-3 pb-10">
-              {Object.entries(grouped).map(([category, exList]) => (
-                <div key={category} className="mb-5">
-                  <p className="text-gray-500 text-xs font-semibold mb-2 uppercase tracking-wider">
-                    {categoryLabel[category]}
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {exList.map(ex => (
-                      <div key={ex.id} className="relative">
-                        <button
-                          onClick={() => addExercise(ex)}
-                          className="w-full text-left px-3 py-3 rounded-xl text-white text-sm font-medium active:scale-95 transition-transform pr-8"
-                          style={{ background: 'var(--bg-card)' }}
-                        >
-                          {ex.name}
-                        </button>
-                        <button
-                          onClick={async (e) => {
-                            e.stopPropagation()
-                            if (!confirm(`'${ex.name}' 종목을 삭제할까요?`)) return
-                            await supabase.from('exercises').delete().eq('id', ex.id)
-                            await fetchExercises()
-                          }}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded text-xs opacity-40 hover:opacity-100 transition-opacity"
-                          style={{ color: 'var(--text-secondary)' }}
-                        >✕</button>
+              {Object.entries(grouped).map(([category, exList]) => {
+                const isExpanded = expandedCategory === category
+                return (
+                  <div key={category} className="mb-2">
+                    {/* 대분류 버튼 */}
+                    <button
+                      onClick={() => setExpandedCategory(isExpanded ? null : category)}
+                      className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-all"
+                      style={{
+                        background: isExpanded ? 'var(--accent)' : 'var(--bg-card)',
+                        color: isExpanded ? 'white' : 'var(--text-primary)'
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">
+                          {category === 'legs' ? '🦵' :
+                           category === 'chest' ? '💪' :
+                           category === 'back' ? '🏋️' :
+                           category === 'shoulder' ? '🔝' :
+                           category === 'arm' ? '💪' :
+                           category === 'core' ? '⚡' : '🏃'}
+                        </span>
+                        <span className="font-bold text-base">{categoryLabel[category]}</span>
                       </div>
-                    ))}
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs opacity-60">{exList.length}개</span>
+                        <span className="text-sm transition-transform"
+                          style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                          ▾
+                        </span>
+                      </div>
+                    </button>
+
+                    {/* 세부 목록 */}
+                    {isExpanded && (
+                      <div className="mt-1 grid grid-cols-2 gap-1.5 px-1">
+                        {exList.map(ex => (
+                          <div key={ex.id} className="relative">
+                            <button
+                              onClick={() => addExercise(ex)}
+                              className="w-full text-left px-3 py-3 rounded-xl text-sm font-medium active:scale-95 transition-transform pr-8"
+                              style={{ background: 'var(--bg-card2)', color: 'var(--text-primary)' }}
+                            >
+                              {ex.name}
+                            </button>
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation()
+                                if (!confirm(`'${ex.name}' 종목과 관련된 모든 기록이 삭제됩니다. 계속할까요?`)) return
+                                await supabase.from('workout_sets').delete().eq('exercise_id', ex.id)
+                                await supabase.from('exercises').delete().eq('id', ex.id)
+                                await fetchExercises()
+                              }}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded text-xs transition-opacity"
+                              style={{ color: 'var(--text-dim)' }}
+                            >✕</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
