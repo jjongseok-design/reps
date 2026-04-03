@@ -136,31 +136,34 @@ export default function WorkoutDetailPage() {
       {/* 종목별 세트 목록 */}
       <div className="px-5 space-y-3">
         {groups.map((group, gi) => (
-          <div key={gi} className="card overflow-hidden flex items-stretch">
-            {/* 왼쪽 이미지 */}
-            <div className="w-24 flex items-center justify-center flex-shrink-0"
-              style={{ background: 'var(--bg-card2)', borderRight: '1px solid var(--border)' }}>
+          <div key={gi} className="card overflow-hidden flex items-center px-3 py-3 gap-4">
+            {/* 왼쪽 이미지 - 투명 배경, 흰색/회색 필터 */}
+            <div className="w-20 h-20 flex items-center justify-center flex-shrink-0">
               {group.imageUrl ? (
-                <img src={group.imageUrl} alt={group.exerciseName} className="w-full h-full object-cover" />
+                <img
+                  src={group.imageUrl}
+                  alt={group.exerciseName}
+                  className="w-full h-full object-contain"
+                  style={{ filter: 'invert(1) grayscale(100%) brightness(0.7) contrast(1.2)', mixBlendMode: 'screen' }}
+                />
               ) : (
-                <span className="text-4xl opacity-60">{categoryEmoji[group.category]}</span>
+                <span className="text-4xl opacity-40">{categoryEmoji[group.category]}</span>
               )}
             </div>
 
             {/* 오른쪽 내용 */}
-            <div className="flex-1 p-3">
-              <p className="font-bold text-white text-sm">{group.exerciseName}</p>
-              <p className="text-xs mb-2" style={{ color: 'var(--accent)' }}>
-                e1RM {getMaxE1RM(group.sets)}kg
-              </p>
-              <div className="space-y-1">
+            <div className="flex-1 flex items-start justify-between">
+              <div>
+                <p className="font-bold text-white text-base leading-tight">{group.exerciseName}</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--accent)' }}>
+                  e1RM {getMaxE1RM(group.sets)}kg
+                </p>
+              </div>
+              <div className="text-right space-y-0.5 ml-3">
                 {group.sets.map((set, si) => (
-                  <div key={si} className="flex items-center justify-between">
-                    <span className="text-xs" style={{ color: 'var(--text-dim)' }}>SET {si + 1}</span>
-                    <span className="text-sm font-medium text-white">
-                      {set.weight_kg}kg × {set.reps}
-                    </span>
-                  </div>
+                  <p key={si} className="text-sm font-medium text-white tabular-nums">
+                    {set.weight_kg}kg × {set.reps}
+                  </p>
                 ))}
               </div>
             </div>

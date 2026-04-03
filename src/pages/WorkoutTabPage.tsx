@@ -50,8 +50,9 @@ export default function WorkoutTabPage() {
     if (data) {
       setSessionId(data.id)
       setIsActive(true)
-      startedAt.current = new Date(data.started_at)
-      startTimer()
+      const sessionStart = new Date(data.started_at)
+      startedAt.current = sessionStart
+      startTimer(sessionStart)
       fetchSessionSets(data.id)
     }
   }
@@ -97,10 +98,12 @@ export default function WorkoutTabPage() {
     setAddingExercise(false)
   }
 
-  const startTimer = () => {
+  const startTimer = (from?: Date) => {
     if (timerRef.current) clearInterval(timerRef.current)
+    const base = from || startedAt.current
+    setElapsed(Math.floor((Date.now() - base.getTime()) / 1000))
     timerRef.current = setInterval(() => {
-      setElapsed(Math.floor((Date.now() - startedAt.current.getTime()) / 1000))
+      setElapsed(Math.floor((Date.now() - base.getTime()) / 1000))
     }, 1000)
   }
 
