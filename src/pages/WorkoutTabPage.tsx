@@ -474,13 +474,25 @@ export default function WorkoutTabPage() {
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {exList.map(ex => (
-                      <button
-                        key={ex.id}
-                        onClick={() => addExercise(ex)}
-                        className="text-left px-3 py-3 bg-gray-900 rounded-xl text-white text-sm font-medium active:scale-95 transition-transform"
-                      >
-                        {ex.name}
-                      </button>
+                      <div key={ex.id} className="relative">
+                        <button
+                          onClick={() => addExercise(ex)}
+                          className="w-full text-left px-3 py-3 rounded-xl text-white text-sm font-medium active:scale-95 transition-transform pr-8"
+                          style={{ background: 'var(--bg-card)' }}
+                        >
+                          {ex.name}
+                        </button>
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation()
+                            if (!confirm(`'${ex.name}' 종목을 삭제할까요?`)) return
+                            await supabase.from('exercises').delete().eq('id', ex.id)
+                            await fetchExercises()
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded text-xs opacity-40 hover:opacity-100 transition-opacity"
+                          style={{ color: 'var(--text-secondary)' }}
+                        >✕</button>
+                      </div>
                     ))}
                   </div>
                 </div>
