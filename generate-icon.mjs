@@ -8,10 +8,9 @@ for (const size of sizes) {
   const ctx = canvas.getContext('2d')
   const s = size / 680
 
-  // 배경
+  // 배경 전체
   ctx.fillStyle = '#f97316'
-  roundRect(ctx, 140*s, 140*s, 400*s, 400*s, 90*s)
-  ctx.fill()
+  ctx.fillRect(0, 0, size, size)
 
   // 바벨
   ctx.fillStyle = 'white'
