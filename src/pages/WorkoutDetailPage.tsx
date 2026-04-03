@@ -81,10 +81,6 @@ export default function WorkoutDetailPage() {
     legs: '🦵', chest: '💪', back: '🏋️', shoulder: '🔝', arm: '💪', core: '⚡', cardio: '🏃'
   }
 
-  const categoryLabel: Record<string, string> = {
-    legs: '하체', chest: '가슴', back: '등', shoulder: '어깨', arm: '팔', core: '코어', cardio: '유산소'
-  }
-
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-base)' }}>
       <p style={{ color: 'var(--text-secondary)' }}>로딩 중...</p>

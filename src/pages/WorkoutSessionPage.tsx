@@ -18,7 +18,7 @@ interface ExerciseEntry {
 
 export default function WorkoutSessionPage() {
   const { id } = useParams()
-  const { user } = useAuth()
+  const { } = useAuth()
   const navigate = useNavigate()
   const [entries, setEntries] = useState<ExerciseEntry[]>([])
   const [exercises, setExercises] = useState<Exercise[]>([])
