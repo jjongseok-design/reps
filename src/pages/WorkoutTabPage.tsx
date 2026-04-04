@@ -414,27 +414,27 @@ export default function WorkoutTabPage() {
                     {/* 아랫줄: 입력 */}
                     <div className="flex items-center gap-2">
                       {entry.exercise.measure_type !== 'time' && (
-                        <div className="flex items-center gap-1 flex-1">
-                          <button onClick={() => updateSet(ei, si, 'weight_kg', -2.5)} className="ctrl-btn w-8 h-8 flex-shrink-0">−</button>
+                        <div className="flex items-center gap-1 flex-1 justify-center">
+                          <button onClick={() => updateSet(ei, si, 'weight_kg', -2.5)} className="ctrl-btn w-7 h-7 flex-shrink-0">−</button>
                           <input
                             type="number"
                             value={set.weight_kg}
                             onChange={e => setInputValue(ei, si, 'weight_kg', Number(e.target.value))}
-                            className="input-dark min-w-0 flex-1 py-1.5 text-sm text-center"
+                            className="input-dark w-14 py-1.5 text-sm text-center flex-shrink-0"
                           />
-                          <button onClick={() => updateSet(ei, si, 'weight_kg', 2.5)} className="ctrl-btn w-8 h-8 flex-shrink-0">+</button>
+                          <button onClick={() => updateSet(ei, si, 'weight_kg', 2.5)} className="ctrl-btn w-7 h-7 flex-shrink-0">+</button>
                           <span className="text-xs w-5 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>kg</span>
                         </div>
                       )}
-                      <div className="flex items-center gap-1 flex-1">
-                        <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? -10 : -1)} className="ctrl-btn w-8 h-8 flex-shrink-0">−</button>
+                      <div className="flex items-center gap-1 flex-1 justify-center">
+                        <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? -10 : -1)} className="ctrl-btn w-7 h-7 flex-shrink-0">−</button>
                         <input
                           type="number"
                           value={set.reps}
                           onChange={e => setInputValue(ei, si, 'reps', Number(e.target.value))}
-                          className="input-dark min-w-0 flex-1 py-1.5 text-sm text-center"
+                          className="input-dark w-14 py-1.5 text-sm text-center flex-shrink-0"
                         />
-                        <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? 10 : 1)} className="ctrl-btn w-8 h-8 flex-shrink-0">+</button>
+                        <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? 10 : 1)} className="ctrl-btn w-7 h-7 flex-shrink-0">+</button>
                         <span className="text-xs w-5 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>
                           {entry.exercise.measure_type === 'time' ? '초' : '회'}
                         </span>
