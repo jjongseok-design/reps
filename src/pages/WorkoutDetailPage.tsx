@@ -154,14 +154,14 @@ export default function WorkoutDetailPage() {
             {/* 오른쪽 내용 */}
             <div className="flex-1 flex items-center justify-between pr-3 pl-2 min-w-0">
               <div className="min-w-0 mr-2">
-                <p className="font-bold text-white text-sm leading-tight truncate">{group.exerciseName}</p>
+                <p className="font-bold text-white text-xs leading-tight truncate">{group.exerciseName}</p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--accent)' }}>
                   e1RM {getMaxE1RM(group.sets)}kg
                 </p>
               </div>
               <div className="text-right space-y-0.5 flex-shrink-0">
                 {group.sets.map((set, si) => (
-                  <p key={si} className="text-sm font-medium text-white tabular-nums whitespace-nowrap">
+                  <p key={si} className="text-xs font-medium text-white tabular-nums whitespace-nowrap">
                     {set.weight_kg}kg × {set.reps}
                   </p>
                 ))}
