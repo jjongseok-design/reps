@@ -531,7 +531,7 @@ export default function WorkoutTabPage() {
                           <div key={ex.id} className="relative">
                             <button
                               onClick={() => !deleteMode && addExercise(ex)}
-                              className="w-full text-left px-3 py-3 rounded-xl text-sm font-medium active:scale-95 transition-transform break-keep"
+                              className="w-full text-left px-3 py-3 rounded-xl text-sm font-medium active:scale-95 transition-transform break-keep line-clamp-2"
                               style={{
                                 background: deleteMode ? 'rgba(239,68,68,0.08)' : 'var(--bg-card2)',
                                 color: 'var(--text-primary)',
