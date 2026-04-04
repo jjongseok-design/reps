@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import type { Exercise } from '../types/index'
+import RestTimer from '../components/RestTimer'
 
 interface SetInput {
   weight_kg: number
@@ -22,6 +23,7 @@ export default function WorkoutTabPage() {
   const [entries, setEntries] = useState<ExerciseEntry[]>([])
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [showPicker, setShowPicker] = useState(false)
+  const [showRestTimer, setShowRestTimer] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [isActive, setIsActive] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -218,6 +220,8 @@ export default function WorkoutTabPage() {
   const toggleDone = (ei: number, si: number) => {
     setEntries(prev => prev.map((entry, i) => {
       if (i !== ei) return entry
+      const wasDone = entry.sets[si].done
+      if (!wasDone) setShowRestTimer(true)
       return {
         ...entry,
         sets: entry.sets.map((set, j) =>
@@ -583,6 +587,9 @@ export default function WorkoutTabPage() {
             </div>
           </div>
         </div>
+      )}
+      {showRestTimer && (
+        <RestTimer onClose={() => setShowRestTimer(false)} />
       )}
     </div>
   )

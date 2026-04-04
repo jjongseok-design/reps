@@ -136,9 +136,9 @@ export default function WorkoutDetailPage() {
       {/* 종목별 세트 목록 */}
       <div className="px-5 space-y-3">
         {groups.map((group, gi) => (
-          <div key={gi} className="card overflow-hidden flex items-center px-3 py-3 gap-4">
-            {/* 왼쪽 이미지 - 투명 배경, 흰색/회색 필터 */}
-            <div className="w-20 h-20 flex items-center justify-center flex-shrink-0">
+          <div key={gi} className="card overflow-hidden flex items-center py-3 gap-0">
+            {/* 왼쪽 이미지 */}
+            <div className="w-28 h-28 flex items-center justify-center flex-shrink-0">
               {group.imageUrl ? (
                 <img
                   src={group.imageUrl}
@@ -147,12 +147,12 @@ export default function WorkoutDetailPage() {
                   style={{ filter: 'invert(1) grayscale(100%) brightness(0.7) contrast(1.2)', mixBlendMode: 'screen' }}
                 />
               ) : (
-                <span className="text-4xl opacity-40">{categoryEmoji[group.category]}</span>
+                <span className="text-5xl opacity-40">{categoryEmoji[group.category]}</span>
               )}
             </div>
 
             {/* 오른쪽 내용 */}
-            <div className="flex-1 flex items-start justify-between">
+            <div className="flex-1 flex items-start justify-between pr-3 pl-2">
               <div>
                 <p className="font-bold text-white text-base leading-tight">{group.exerciseName}</p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--accent)' }}>
