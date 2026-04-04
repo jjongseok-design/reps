@@ -32,6 +32,7 @@ export default function WorkoutTabPage() {
   const [newExerciseCategory, setNewExerciseCategory] = useState('legs')
   const [addingExercise, setAddingExercise] = useState(false)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
+  const [deleteMode, setDeleteMode] = useState(false)
   const startedAt = useRef<Date>(new Date())
   const timerRef = useRef<any>(null)
 
@@ -175,6 +176,7 @@ export default function WorkoutTabPage() {
       sets: lastSets || [{ weight_kg: 0, reps: 10, done: false }]
     }])
     setShowPicker(false)
+    setDeleteMode(false)
   }
 
   const addSet = (ei: number) => {
@@ -465,17 +467,27 @@ export default function WorkoutTabPage() {
 
       {/* 운동 선택 모달 */}
       {showPicker && (
-        <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.85)' }} onClick={() => setShowPicker(false)}>
+        <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.85)' }} onClick={() => { setShowPicker(false); setDeleteMode(false) }}>
           <div className="w-full rounded-t-3xl max-h-[80vh] overflow-y-auto" style={{ background: '#0f0f0f', border: '1px solid var(--border)' }} onClick={e => e.stopPropagation()}>
             <div className="sticky top-0 px-5 py-4" style={{ background: '#0f0f0f', borderBottom: '1px solid var(--border)' }}>
               <div className="w-10 h-1 rounded-full mx-auto mb-3" style={{ background: 'var(--border)' }} />
               <div className="flex items-center justify-between">
                 <h3 className="font-display text-2xl text-white">운동 선택</h3>
-                <button
-                  onClick={() => setShowAddExercise(true)}
-                  className="text-sm font-bold px-3 py-1.5 rounded-lg"
-                  style={{ background: 'var(--accent-dim)', color: 'var(--accent)' }}
-                >+ 직접 추가</button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setDeleteMode(prev => !prev)}
+                    className="text-sm font-bold px-3 py-1.5 rounded-lg"
+                    style={{
+                      background: deleteMode ? 'rgba(239,68,68,0.15)' : 'var(--bg-card2)',
+                      color: deleteMode ? '#ef4444' : 'var(--text-secondary)'
+                    }}
+                  >{deleteMode ? '삭제 취소' : '삭제'}</button>
+                  <button
+                    onClick={() => setShowAddExercise(true)}
+                    className="text-sm font-bold px-3 py-1.5 rounded-lg"
+                    style={{ background: 'var(--accent-dim)', color: 'var(--accent)' }}
+                  >+ 추가</button>
+                </div>
               </div>
             </div>
             <div className="px-4 py-3 pb-10">
@@ -518,23 +530,29 @@ export default function WorkoutTabPage() {
                         {exList.map(ex => (
                           <div key={ex.id} className="relative">
                             <button
-                              onClick={() => addExercise(ex)}
-                              className="w-full text-left px-3 py-3 rounded-xl text-sm font-medium active:scale-95 transition-transform pr-8"
-                              style={{ background: 'var(--bg-card2)', color: 'var(--text-primary)' }}
+                              onClick={() => !deleteMode && addExercise(ex)}
+                              className="w-full text-left px-3 py-3 rounded-xl text-sm font-medium active:scale-95 transition-transform break-keep"
+                              style={{
+                                background: deleteMode ? 'rgba(239,68,68,0.08)' : 'var(--bg-card2)',
+                                color: 'var(--text-primary)',
+                                paddingRight: deleteMode ? '2rem' : '0.75rem'
+                              }}
                             >
                               {ex.name}
                             </button>
-                            <button
-                              onClick={async (e) => {
-                                e.stopPropagation()
-                                if (!confirm(`'${ex.name}' 종목과 관련된 모든 기록이 삭제됩니다. 계속할까요?`)) return
-                                await supabase.from('workout_sets').delete().eq('exercise_id', ex.id)
-                                await supabase.from('exercises').delete().eq('id', ex.id)
-                                await fetchExercises()
-                              }}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded text-xs transition-opacity"
-                              style={{ color: 'var(--text-dim)' }}
-                            >✕</button>
+                            {deleteMode && (
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation()
+                                  if (!confirm(`'${ex.name}' 종목과 관련된 모든 기록이 삭제됩니다. 계속할까요?`)) return
+                                  await supabase.from('workout_sets').delete().eq('exercise_id', ex.id)
+                                  await supabase.from('exercises').delete().eq('id', ex.id)
+                                  await fetchExercises()
+                                }}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded text-xs"
+                                style={{ color: '#ef4444', background: 'rgba(239,68,68,0.15)' }}
+                              >✕</button>
+                            )}
                           </div>
                         ))}
                       </div>
