@@ -138,7 +138,7 @@ export default function WorkoutDetailPage() {
         {groups.map((group, gi) => (
           <div key={gi} className="card overflow-hidden flex items-center py-3 gap-0">
             {/* 왼쪽 이미지 */}
-            <div className="w-28 h-28 flex items-center justify-center flex-shrink-0">
+            <div className="w-20 h-20 flex items-center justify-center flex-shrink-0">
               {group.imageUrl ? (
                 <img
                   src={group.imageUrl}
@@ -147,21 +147,21 @@ export default function WorkoutDetailPage() {
                   style={{ filter: 'invert(1) grayscale(100%) brightness(0.7) contrast(1.2)', mixBlendMode: 'screen' }}
                 />
               ) : (
-                <span className="text-5xl opacity-40">{categoryEmoji[group.category]}</span>
+                <span className="text-4xl opacity-40">{categoryEmoji[group.category]}</span>
               )}
             </div>
 
             {/* 오른쪽 내용 */}
-            <div className="flex-1 flex items-start justify-between pr-3 pl-2">
-              <div>
-                <p className="font-bold text-white text-base leading-tight">{group.exerciseName}</p>
+            <div className="flex-1 flex items-center justify-between pr-3 pl-2 min-w-0">
+              <div className="min-w-0 mr-2">
+                <p className="font-bold text-white text-sm leading-tight truncate">{group.exerciseName}</p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--accent)' }}>
                   e1RM {getMaxE1RM(group.sets)}kg
                 </p>
               </div>
-              <div className="text-right space-y-0.5 ml-3">
+              <div className="text-right space-y-0.5 flex-shrink-0">
                 {group.sets.map((set, si) => (
-                  <p key={si} className="text-sm font-medium text-white tabular-nums">
+                  <p key={si} className="text-sm font-medium text-white tabular-nums whitespace-nowrap">
                     {set.weight_kg}kg × {set.reps}
                   </p>
                 ))}
