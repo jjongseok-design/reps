@@ -136,9 +136,9 @@ export default function WorkoutDetailPage() {
       {/* 종목별 세트 목록 */}
       <div className="px-5 space-y-3">
         {groups.map((group, gi) => (
-          <div key={gi} className="card overflow-hidden flex items-center py-3 gap-0">
+          <div key={gi} className="card overflow-hidden flex items-start py-3 gap-0">
             {/* 왼쪽 이미지 */}
-            <div className="w-20 h-20 flex items-center justify-center flex-shrink-0">
+            <div className="w-20 h-20 flex items-center justify-center flex-shrink-0 self-center">
               {group.imageUrl ? (
                 <img
                   src={group.imageUrl}
@@ -153,7 +153,7 @@ export default function WorkoutDetailPage() {
 
             {/* 오른쪽 내용 */}
             <div className="flex-1 flex items-start justify-between pr-3 pl-2 min-w-0">
-              <div className="min-w-0 mr-2">
+              <div className="min-w-0 mr-2 pt-1">
                 <p className="font-bold text-white text-xs leading-tight truncate">{group.exerciseName}</p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--accent)' }}>
                   e1RM {getMaxE1RM(group.sets)}kg
