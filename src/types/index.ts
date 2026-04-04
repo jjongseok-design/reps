@@ -3,6 +3,7 @@ export interface Exercise {
   name: string
   category: 'legs' | 'chest' | 'back' | 'shoulder' | 'arm' | 'core' | 'cardio'
   calories_per_kg_rep: number
+  measure_type?: 'reps' | 'time'
 }
 
 export interface WorkoutSession {

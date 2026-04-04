@@ -272,18 +272,26 @@ export default function WorkoutTabPage() {
   }
 
   const categoryLabel: Record<string, string> = {
-    legs: '하체', chest: '가슴', back: '등', shoulder: '어깨', arm: '팔', core: '코어', cardio: '유산소'
+    legs: '하체', chest: '가슴', back: '등', shoulder: '어깨', arm: '팔', core: '코어'
   }
+
+  const categoryOrder = ['legs', 'chest', 'back', 'shoulder', 'arm', 'core']
 
   const categoryEmoji: Record<string, string> = {
     legs: '🦵', chest: '💪', back: '🏋️', shoulder: '🔝', arm: '💪', core: '⚡', cardio: '🏃'
   }
 
-  const grouped = exercises.reduce((acc, ex) => {
+  const groupedRaw = exercises.reduce((acc, ex) => {
     if (!acc[ex.category]) acc[ex.category] = []
     acc[ex.category].push(ex)
     return acc
   }, {} as Record<string, Exercise[]>)
+
+  const grouped = Object.fromEntries(
+    categoryOrder
+      .filter(cat => groupedRaw[cat])
+      .map(cat => [cat, groupedRaw[cat]])
+  )
 
   // 운동 시작 전 화면
   if (!isActive) {
@@ -386,7 +394,8 @@ export default function WorkoutTabPage() {
                       {si + 1}
                     </span>
 
-                    {/* kg */}
+                    {/* kg - 시간 측정 종목이면 숨김 */}
+                    {entry.exercise.measure_type !== 'time' && (
                     <div className="flex items-center gap-1 flex-1">
                       <button onClick={() => updateSet(ei, si, 'weight_kg', -2.5)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">−</button>
                       <div className="flex-1 relative">
@@ -401,10 +410,11 @@ export default function WorkoutTabPage() {
                       </div>
                       <button onClick={() => updateSet(ei, si, 'weight_kg', 2.5)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">+</button>
                     </div>
+                    )}
 
-                    {/* 횟수 */}
+                    {/* 횟수 or 시간 */}
                     <div className="flex items-center gap-1 flex-1">
-                      <button onClick={() => updateSet(ei, si, 'reps', -1)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">−</button>
+                      <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? -10 : -1)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">−</button>
                       <div className="flex-1 relative">
                         <input
                           type="number"
@@ -413,9 +423,11 @@ export default function WorkoutTabPage() {
                           className="input-dark w-full py-1 text-sm"
                         />
                         <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-xs pointer-events-none"
-                          style={{ color: 'var(--text-dim)' }}>회</span>
+                          style={{ color: 'var(--text-dim)' }}>
+                          {entry.exercise.measure_type === 'time' ? '초' : '회'}
+                        </span>
                       </div>
-                      <button onClick={() => updateSet(ei, si, 'reps', 1)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">+</button>
+                      <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? 10 : 1)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">+</button>
                     </div>
 
                     {/* 완료 + 삭제 */}
