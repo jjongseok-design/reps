@@ -107,7 +107,7 @@ body {
 /* 버튼 조절 */
 .ctrl-btn {
   background: #2a2a2a;
-  border: 1px solid var(--border);
+  border: none;
   color: white;
   border-radius: 10px;
   font-weight: 700;
