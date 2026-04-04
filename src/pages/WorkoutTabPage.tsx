@@ -268,7 +268,7 @@ export default function WorkoutTabPage() {
     setEntries([])
     setElapsed(0)
     setSaving(false)
-    navigate('/history')
+    navigate('/workout')
   }
 
   const categoryLabel: Record<string, string> = {
