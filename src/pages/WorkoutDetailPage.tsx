@@ -152,7 +152,7 @@ export default function WorkoutDetailPage() {
             </div>
 
             {/* 오른쪽 내용 */}
-            <div className="flex-1 flex items-center justify-between pr-3 pl-2 min-w-0">
+            <div className="flex-1 flex items-start justify-between pr-3 pl-2 min-w-0">
               <div className="min-w-0 mr-2">
                 <p className="font-bold text-white text-xs leading-tight truncate">{group.exerciseName}</p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--accent)' }}>
