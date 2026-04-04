@@ -98,7 +98,7 @@ export default function HistoryPage() {
         </div>
         <button
           onClick={(e) => deleteSession(session.id, e)}
-          className="text-base px-1 opacity-30 hover:opacity-60 transition-opacity"
+          className="text-base px-1 opacity-60 hover:opacity-90 transition-opacity"
         >🗑️</button>
       </div>
     </div>

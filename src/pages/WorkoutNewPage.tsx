@@ -181,7 +181,7 @@ export default function WorkoutNewPage() {
       {/* 헤더 */}
       <div className="sticky top-0 bg-dark/95 backdrop-blur border-b border-gray-800 px-4 py-3 z-10">
         <div className="flex items-center justify-between mb-2">
-          <button onClick={() => navigate('/')} className="text-gray-400 text-sm">✕ 취소</button>
+          <button onClick={() => navigate('/')} className="text-gray-300 text-sm">✕ 취소</button>
           <button
             onClick={handleFinish}
             disabled={saving}
@@ -194,15 +194,15 @@ export default function WorkoutNewPage() {
         <div className="flex justify-around pt-1">
           <div className="text-center">
             <p className="text-primary font-bold text-lg">{formatElapsed(elapsed)}</p>
-            <p className="text-gray-500 text-xs">시간</p>
+            <p className="text-gray-300 text-xs">시간</p>
           </div>
           <div className="text-center">
             <p className="text-white font-bold text-lg">{totalVolume.toLocaleString()}</p>
-            <p className="text-gray-500 text-xs">볼륨 kg</p>
+            <p className="text-gray-300 text-xs">볼륨 kg</p>
           </div>
           <div className="text-center">
             <p className="text-white font-bold text-lg">{entries.reduce((s, e) => s + e.sets.filter(x => x.done).length, 0)}</p>
-            <p className="text-gray-500 text-xs">완료 세트</p>
+            <p className="text-gray-300 text-xs">완료 세트</p>
           </div>
         </div>
       </div>
@@ -216,7 +216,7 @@ export default function WorkoutNewPage() {
               <div className="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
                 <div>
                   <p className="text-white font-bold">{entry.exercise.name}</p>
-                  <p className="text-gray-500 text-xs">
+                  <p className="text-gray-300 text-xs">
                     {categoryLabel[entry.exercise.category]} · e1RM {maxE1RM}kg
                   </p>
                 </div>
@@ -232,19 +232,19 @@ export default function WorkoutNewPage() {
                   >
                     {/* 윗줄: 세트번호 + 완료 + 삭제 */}
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-gray-500 text-xs">세트 {si + 1}</span>
+                      <span className="text-gray-300 text-xs">세트 {si + 1}</span>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => toggleDone(ei, si)}
                           className={`px-3 py-0.5 rounded-full border text-xs font-medium transition-all ${
-                            set.done ? 'bg-primary border-primary text-white' : 'border-gray-600 text-gray-500'
+                            set.done ? 'bg-primary border-primary text-white' : 'border-gray-400 text-gray-300'
                           }`}
                         >
                           {set.done ? '✓ 완료' : '완료'}
                         </button>
                         <button
                           onClick={() => removeSet(ei, si)}
-                          className="text-gray-600 text-xs px-1"
+                          className="text-gray-300 text-xs px-1"
                         >✕</button>
                       </div>
                     </div>
@@ -265,7 +265,7 @@ export default function WorkoutNewPage() {
                           onClick={() => updateSet(ei, si, 'weight_kg', 2.5)}
                           className="w-7 h-7 shrink-0 bg-gray-800 rounded-lg text-white font-bold text-sm"
                         >+</button>
-                        <span className="text-gray-500 text-xs shrink-0">kg</span>
+                        <span className="text-gray-300 text-xs shrink-0">kg</span>
                       </div>
                       <div className="flex items-center gap-1 flex-1 min-w-0">
                         <button
@@ -282,7 +282,7 @@ export default function WorkoutNewPage() {
                           onClick={() => updateSet(ei, si, 'reps', 1)}
                           className="w-7 h-7 shrink-0 bg-gray-800 rounded-lg text-white font-bold text-sm"
                         >+</button>
-                        <span className="text-gray-500 text-xs shrink-0">회</span>
+                        <span className="text-gray-300 text-xs shrink-0">회</span>
                       </div>
                     </div>
                   </div>
@@ -292,7 +292,7 @@ export default function WorkoutNewPage() {
               {/* 세트 추가 */}
               <button
                 onClick={() => addSet(ei)}
-                className="w-full py-2.5 text-gray-500 text-sm border-t border-gray-800"
+                className="w-full py-2.5 text-gray-300 text-sm border-t border-gray-800"
               >
                 + 세트 추가
               </button>
@@ -303,7 +303,7 @@ export default function WorkoutNewPage() {
         {/* 운동 추가 버튼 */}
         <button
           onClick={() => setShowPicker(true)}
-          className="w-full py-5 border-2 border-dashed border-gray-700 rounded-2xl text-gray-400 font-medium text-lg active:scale-95 transition-transform"
+          className="w-full py-5 border-2 border-dashed border-gray-700 rounded-2xl text-gray-300 font-medium text-lg active:scale-95 transition-transform"
         >
           + 운동 추가
         </button>
@@ -323,7 +323,7 @@ export default function WorkoutNewPage() {
             <div className="px-4 py-3 pb-10">
               {Object.entries(grouped).map(([category, exList]) => (
                 <div key={category} className="mb-5">
-                  <p className="text-gray-500 text-xs font-semibold mb-2 uppercase tracking-wider">
+                  <p className="text-gray-300 text-xs font-semibold mb-2 uppercase tracking-wider">
                     {categoryLabel[category]}
                   </p>
                   <div className="grid grid-cols-2 gap-2">

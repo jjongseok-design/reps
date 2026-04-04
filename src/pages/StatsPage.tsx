@@ -141,8 +141,8 @@ export default function StatsPage() {
             <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>최근 12회 기준</p>
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={volumeData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                <XAxis dataKey="date" tick={{ fill: '#444', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#444', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="date" tick={{ fill: '#aaa', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#aaa', fontSize: 10 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(249,115,22,0.05)' }} />
                 <Bar dataKey="volume" fill="var(--accent)" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -171,8 +171,8 @@ export default function StatsPage() {
             <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>추정 1회 최대 중량</p>
             <ResponsiveContainer width="100%" height={160}>
               <LineChart data={e1rmData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                <XAxis dataKey="date" tick={{ fill: '#444', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#444', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="date" tick={{ fill: '#aaa', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#aaa', fontSize: 10 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
                 <Line
                   type="monotone"

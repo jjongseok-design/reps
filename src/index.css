@@ -11,8 +11,8 @@
   --accent-dim: rgba(249,115,22,0.15);
   --accent2: #fb923c;
   --text-primary: #ffffff;
-  --text-secondary: #888888;
-  --text-dim: #999999;
+  --text-secondary: #c0c0c0;
+  --text-dim: #b0b0b0;
   --green: #22c55e;
   --blue: #3b82f6;
 }
@@ -125,8 +125,8 @@ body {
 
 /* 완료 버튼 */
 .done-btn {
-  border: 1px solid #333;
-  color: #555;
+  border: 1px solid #555;
+  color: #b0b0b0;
   border-radius: 20px;
   font-size: 11px;
   font-weight: 600;

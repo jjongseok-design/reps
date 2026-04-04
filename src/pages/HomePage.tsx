@@ -69,9 +69,9 @@ export default function HomePage() {
       <div className="flex items-center justify-between px-4 pt-6 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white">Reps 💪</h1>
-          <p className="text-gray-500 text-sm">{user?.email}</p>
+          <p className="text-gray-300 text-sm">{user?.email}</p>
         </div>
-        <button onClick={signOut} className="text-gray-500 text-sm">로그아웃</button>
+        <button onClick={signOut} className="text-gray-300 text-sm">로그아웃</button>
       </div>
 
       <div className="px-4 space-y-4">
@@ -83,7 +83,7 @@ export default function HomePage() {
           >
             <div>
               <p className="text-primary font-bold">운동 진행 중 🔥</p>
-              <p className="text-gray-400 text-sm mt-0.5">
+              <p className="text-gray-300 text-sm mt-0.5">
                 {formatDate(inProgressSession.started_at)} · 볼륨 {inProgressSession.total_volume_kg.toLocaleString()}kg
               </p>
             </div>
@@ -105,19 +105,19 @@ export default function HomePage() {
             onClick={() => navigate(`/workout/${todaySession.id}`)}
             className="bg-gray-900 rounded-2xl p-4 cursor-pointer active:scale-95 transition-transform"
           >
-            <p className="text-gray-500 text-xs mb-2">오늘 운동</p>
+            <p className="text-gray-300 text-xs mb-2">오늘 운동</p>
             <div className="flex justify-around">
               <div className="text-center">
                 <p className="text-primary font-bold text-xl">{todaySession.total_volume_kg.toLocaleString()}</p>
-                <p className="text-gray-500 text-xs">볼륨 kg</p>
+                <p className="text-gray-300 text-xs">볼륨 kg</p>
               </div>
               <div className="text-center">
                 <p className="text-green-400 font-bold text-xl">{Math.round(todaySession.total_calories)}</p>
-                <p className="text-gray-500 text-xs">칼로리</p>
+                <p className="text-gray-300 text-xs">칼로리</p>
               </div>
               <div className="text-center">
                 <p className="text-white font-bold text-xl">{getDuration(todaySession)}</p>
-                <p className="text-gray-500 text-xs">운동 시간</p>
+                <p className="text-gray-300 text-xs">운동 시간</p>
               </div>
             </div>
           </div>
@@ -127,9 +127,9 @@ export default function HomePage() {
         <div>
           <h2 className="text-white font-semibold mb-3">최근 기록</h2>
           {loading ? (
-            <p className="text-gray-500 text-sm">로딩 중...</p>
+            <p className="text-gray-300 text-sm">로딩 중...</p>
           ) : recentSessions.length === 0 ? (
-            <p className="text-gray-500 text-sm">아직 운동 기록이 없어요</p>
+            <p className="text-gray-300 text-sm">아직 운동 기록이 없어요</p>
           ) : (
             <div className="space-y-2">
               {recentSessions.map(session => (
@@ -140,11 +140,11 @@ export default function HomePage() {
                 >
                   <div>
                     <p className="text-white font-medium">{formatDate(session.started_at)}</p>
-                    <p className="text-gray-500 text-xs">{getDuration(session)}</p>
+                    <p className="text-gray-300 text-xs">{getDuration(session)}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-primary font-bold">{session.total_volume_kg.toLocaleString()} kg</p>
-                    <p className="text-gray-500 text-xs">{Math.round(session.total_calories)} kcal</p>
+                    <p className="text-gray-300 text-xs">{Math.round(session.total_calories)} kcal</p>
                   </div>
                 </div>
               ))}

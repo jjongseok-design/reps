@@ -147,7 +147,7 @@ export default function WorkoutDetailPage() {
                   style={{ filter: 'invert(1) grayscale(100%) brightness(0.7) contrast(1.2)', mixBlendMode: 'screen' }}
                 />
               ) : (
-                <span className="text-4xl opacity-40">{categoryEmoji[group.category]}</span>
+                <span className="text-4xl opacity-70">{categoryEmoji[group.category]}</span>
               )}
             </div>
 
