@@ -402,7 +402,7 @@ export default function WorkoutTabPage() {
                           type="number"
                           value={set.weight_kg}
                           onChange={e => setInputValue(ei, si, 'weight_kg', Number(e.target.value))}
-                          className="input-dark w-12 py-1 text-xs text-center"
+                          className="input-dark w-11 py-1 text-xs text-center"
                         />
                         <button onClick={() => updateSet(ei, si, 'weight_kg', 2.5)} className="ctrl-btn w-6 h-7 text-xs flex-shrink-0">+</button>
                         <span className="text-xs w-4 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>kg</span>
@@ -416,7 +416,7 @@ export default function WorkoutTabPage() {
                         type="number"
                         value={set.reps}
                         onChange={e => setInputValue(ei, si, 'reps', Number(e.target.value))}
-                        className="input-dark w-12 py-1 text-xs text-center"
+                        className="input-dark w-11 py-1 text-xs text-center"
                       />
                       <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? 10 : 1)} className="ctrl-btn w-6 h-7 text-xs flex-shrink-0">+</button>
                       <span className="text-xs w-4 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>
@@ -432,7 +432,8 @@ export default function WorkoutTabPage() {
                         style={{
                           background: set.done ? 'var(--accent)' : 'transparent',
                           borderColor: set.done ? 'var(--accent)' : '#333',
-                          color: set.done ? 'white' : '#555'
+                          color: set.done ? 'white' : '#555',
+                          padding: '2px 6px'
                         }}
                       >
                         {set.done ? '✓' : '○'}
