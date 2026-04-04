@@ -383,62 +383,63 @@ export default function WorkoutTabPage() {
               <div className="px-4 py-2">
                 {entry.sets.map((set, si) => (
                   <div key={si}
-                    className="py-2 transition-all"
+                    className="flex items-center gap-1.5 py-2 transition-all"
                     style={{
                       borderBottom: si < entry.sets.length - 1 ? '1px solid var(--border)' : 'none',
                       opacity: set.done ? 0.5 : 1
                     }}>
-                    {/* 윗줄: 세트번호 + 완료/삭제 */}
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-bold"
-                        style={{ color: set.done ? 'var(--accent)' : 'var(--text-dim)' }}>
-                        SET {si + 1}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => toggleDone(ei, si)}
-                          className="done-btn"
-                          style={{
-                            background: set.done ? 'var(--accent)' : 'transparent',
-                            borderColor: set.done ? 'var(--accent)' : '#333',
-                            color: set.done ? 'white' : '#555'
-                          }}
-                        >
-                          {set.done ? '✓ 완료' : '완료'}
-                        </button>
-                        <button onClick={() => removeSet(ei, si)}
-                          className="text-xs w-6 h-6 flex items-center justify-center rounded"
-                          style={{ color: 'var(--text-dim)', background: 'var(--bg-card2)' }}>✕</button>
-                      </div>
-                    </div>
-                    {/* 아랫줄: 입력 */}
-                    <div className="flex items-center gap-2">
-                      {entry.exercise.measure_type !== 'time' && (
-                        <div className="flex items-center gap-1 flex-1 justify-center">
-                          <button onClick={() => updateSet(ei, si, 'weight_kg', -2.5)} className="ctrl-btn w-7 h-7 flex-shrink-0">−</button>
-                          <input
-                            type="number"
-                            value={set.weight_kg}
-                            onChange={e => setInputValue(ei, si, 'weight_kg', Number(e.target.value))}
-                            className="input-dark w-14 py-1.5 text-sm text-center flex-shrink-0"
-                          />
-                          <button onClick={() => updateSet(ei, si, 'weight_kg', 2.5)} className="ctrl-btn w-7 h-7 flex-shrink-0">+</button>
-                          <span className="text-xs w-5 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>kg</span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-1 flex-1 justify-center">
-                        <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? -10 : -1)} className="ctrl-btn w-7 h-7 flex-shrink-0">−</button>
+                    {/* 세트 번호 */}
+                    <span className="text-xs font-bold w-4 text-center flex-shrink-0"
+                      style={{ color: set.done ? 'var(--accent)' : 'var(--text-dim)' }}>
+                      {si + 1}
+                    </span>
+
+                    {/* kg */}
+                    {entry.exercise.measure_type !== 'time' && (
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button onClick={() => updateSet(ei, si, 'weight_kg', -2.5)} className="ctrl-btn w-6 h-7 text-xs flex-shrink-0">−</button>
                         <input
                           type="number"
-                          value={set.reps}
-                          onChange={e => setInputValue(ei, si, 'reps', Number(e.target.value))}
-                          className="input-dark w-14 py-1.5 text-sm text-center flex-shrink-0"
+                          value={set.weight_kg}
+                          onChange={e => setInputValue(ei, si, 'weight_kg', Number(e.target.value))}
+                          className="input-dark w-12 py-1 text-xs text-center"
                         />
-                        <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? 10 : 1)} className="ctrl-btn w-7 h-7 flex-shrink-0">+</button>
-                        <span className="text-xs w-5 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>
-                          {entry.exercise.measure_type === 'time' ? '초' : '회'}
-                        </span>
+                        <button onClick={() => updateSet(ei, si, 'weight_kg', 2.5)} className="ctrl-btn w-6 h-7 text-xs flex-shrink-0">+</button>
+                        <span className="text-xs w-4 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>kg</span>
                       </div>
+                    )}
+
+                    {/* 횟수 or 시간 */}
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? -10 : -1)} className="ctrl-btn w-6 h-7 text-xs flex-shrink-0">−</button>
+                      <input
+                        type="number"
+                        value={set.reps}
+                        onChange={e => setInputValue(ei, si, 'reps', Number(e.target.value))}
+                        className="input-dark w-12 py-1 text-xs text-center"
+                      />
+                      <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? 10 : 1)} className="ctrl-btn w-6 h-7 text-xs flex-shrink-0">+</button>
+                      <span className="text-xs w-4 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>
+                        {entry.exercise.measure_type === 'time' ? '초' : '회'}
+                      </span>
+                    </div>
+
+                    {/* 완료 + 삭제 */}
+                    <div className="flex items-center gap-1 ml-auto flex-shrink-0">
+                      <button
+                        onClick={() => toggleDone(ei, si)}
+                        className="done-btn"
+                        style={{
+                          background: set.done ? 'var(--accent)' : 'transparent',
+                          borderColor: set.done ? 'var(--accent)' : '#333',
+                          color: set.done ? 'white' : '#555'
+                        }}
+                      >
+                        {set.done ? '✓' : '○'}
+                      </button>
+                      <button onClick={() => removeSet(ei, si)}
+                        className="text-xs w-5 h-5 flex items-center justify-center rounded"
+                        style={{ color: 'var(--text-dim)', background: 'var(--bg-card2)' }}>✕</button>
                     </div>
                   </div>
                 ))}
