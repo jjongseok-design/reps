@@ -103,7 +103,7 @@ export default function StatsPage() {
 
   return (
     <div className="min-h-screen pb-24 max-w-md mx-auto" style={{ background: 'var(--bg-base)' }}>
-      <div className="px-5 pt-8 pb-4">
+      <div className="px-5 pb-4" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top))' }}>
         <h1 className="font-display text-4xl" style={{ color: 'var(--accent)' }}>통계</h1>
       </div>
 
