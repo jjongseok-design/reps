@@ -383,7 +383,7 @@ export default function WorkoutTabPage() {
               <div className="px-4 py-2">
                 {entry.sets.map((set, si) => (
                   <div key={si}
-                    className="flex items-center gap-1.5 py-2 transition-all"
+                    className="flex items-center gap-1 py-2 transition-all"
                     style={{
                       borderBottom: si < entry.sets.length - 1 ? '1px solid var(--border)' : 'none',
                       opacity: set.done ? 0.5 : 1
@@ -396,30 +396,30 @@ export default function WorkoutTabPage() {
 
                     {/* kg */}
                     {entry.exercise.measure_type !== 'time' && (
-                      <div className="flex items-center gap-1 flex-shrink-0">
+                      <div className="flex items-center gap-0.5 flex-shrink-0">
                         <button onClick={() => updateSet(ei, si, 'weight_kg', -2.5)} className="ctrl-btn w-6 h-7 text-xs flex-shrink-0">−</button>
                         <input
                           type="number"
                           value={set.weight_kg}
                           onChange={e => setInputValue(ei, si, 'weight_kg', Number(e.target.value))}
-                          className="input-dark w-11 py-1 text-xs text-center"
+                          className="input-dark w-10 py-1 text-xs text-center"
                         />
                         <button onClick={() => updateSet(ei, si, 'weight_kg', 2.5)} className="ctrl-btn w-6 h-7 text-xs flex-shrink-0">+</button>
-                        <span className="text-xs w-4 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>kg</span>
+                        <span className="text-xs w-5 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>kg</span>
                       </div>
                     )}
 
                     {/* 횟수 or 시간 */}
-                    <div className="flex items-center gap-1 flex-shrink-0">
+                    <div className="flex items-center gap-0.5 flex-shrink-0">
                       <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? -10 : -1)} className="ctrl-btn w-6 h-7 text-xs flex-shrink-0">−</button>
                       <input
                         type="number"
                         value={set.reps}
                         onChange={e => setInputValue(ei, si, 'reps', Number(e.target.value))}
-                        className="input-dark w-11 py-1 text-xs text-center"
+                        className="input-dark w-10 py-1 text-xs text-center"
                       />
                       <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? 10 : 1)} className="ctrl-btn w-6 h-7 text-xs flex-shrink-0">+</button>
-                      <span className="text-xs w-4 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>
+                      <span className="text-xs w-5 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>
                         {entry.exercise.measure_type === 'time' ? '초' : '회'}
                       </span>
                     </div>
@@ -431,8 +431,8 @@ export default function WorkoutTabPage() {
                         className="done-btn"
                         style={{
                           background: set.done ? 'var(--accent)' : 'transparent',
-                          borderColor: set.done ? 'var(--accent)' : '#333',
-                          color: set.done ? 'white' : '#555',
+                          borderColor: set.done ? 'var(--accent)' : '#555',
+                          color: set.done ? 'white' : '#aaa',
                           padding: '2px 6px'
                         }}
                       >
