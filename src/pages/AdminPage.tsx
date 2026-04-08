@@ -158,6 +158,8 @@ export default function AdminPage() {
 
             {/* 드래그앤드롭 업로드 */}
             <label
+              htmlFor={`file-${ex.id}`}
+              onDragEnter={e => { e.preventDefault(); setDragOver(ex.id) }}
               onDragOver={e => { e.preventDefault(); setDragOver(ex.id) }}
               onDragLeave={() => setDragOver(null)}
               onDrop={e => handleDrop(e, ex.id)}
@@ -169,17 +171,18 @@ export default function AdminPage() {
               }}
             >
               {uploading === ex.id
-                ? <span style={{ color: 'var(--accent)' }}>업로드 중...</span>
-                : <span>{ex.image_url ? '🔄 교체' : '+ 이미지'}</span>
+                ? <span style={{ pointerEvents: 'none', color: 'var(--accent)' }}>업로드 중...</span>
+                : <span style={{ pointerEvents: 'none' }}>{ex.image_url ? '🔄 교체' : '+ 이미지'}</span>
               }
-              <input
-                type="file"
-                accept=".gif,.png,.jpg,.jpeg,.webp"
-                className="hidden"
-                onChange={e => handleFileInput(e, ex.id)}
-                disabled={uploading === ex.id}
-              />
             </label>
+            <input
+              id={`file-${ex.id}`}
+              type="file"
+              accept=".gif,.png,.jpg,.jpeg,.webp"
+              className="hidden"
+              onChange={e => handleFileInput(e, ex.id)}
+              disabled={uploading === ex.id}
+            />
           </div>
         ))}
       </div>
