@@ -15,6 +15,7 @@ interface SetInput {
 interface ExerciseEntry {
   exercise: Exercise
   sets: SetInput[]
+  weightStep: number
 }
 
 export default function WorkoutTabPage() {
@@ -76,7 +77,7 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
       data.forEach(set => {
         const exId = set.exercise_id
         if (!grouped[exId]) {
-          grouped[exId] = { exercise: set.exercise as Exercise, sets: [] }
+          grouped[exId] = { exercise: set.exercise as Exercise, sets: [], weightStep: 2.5 }
         }
         grouped[exId].sets.push({ weight_kg: set.weight_kg, reps: set.reps, done: true })
       })
@@ -177,7 +178,8 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
     const lastSets = await fetchLastSets(exercise.id)
     setEntries(prev => [...prev, {
       exercise,
-      sets: lastSets || [{ weight_kg: 0, reps: 10, done: false }]
+      sets: lastSets || [{ weight_kg: 0, reps: 10, done: false }],
+      weightStep: 2.5
     }])
     setShowPicker(false)
   }
@@ -189,7 +191,8 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
       const lastSets = await fetchLastSets(ex.id)
       newEntries.push({
         exercise: ex,
-        sets: lastSets || [{ weight_kg: 0, reps: 10, done: false }]
+        sets: lastSets || [{ weight_kg: 0, reps: 10, done: false }],
+        weightStep: 2.5
       })
     }
     setEntries(prev => [...prev, ...newEntries])
@@ -213,6 +216,10 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
       next.has(id) ? next.delete(id) : next.add(id)
       return next
     })
+  }
+
+  const setWeightStep = (ei: number, step: number) => {
+    setEntries(prev => prev.map((entry, i) => i !== ei ? entry : { ...entry, weightStep: step }))
   }
 
   const addSet = (ei: number) => {
@@ -409,73 +416,88 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
                     {categoryLabel[entry.exercise.category]} · e1RM {maxE1RM}kg
                   </p>
                 </div>
-                <span className="text-2xl">{categoryEmoji[entry.exercise.category]}</span>
+                <div className="flex items-center gap-2">
+                  {/* 중량 증가 단위 선택 */}
+                  {entry.exercise.measure_type !== 'time' && (
+                    <div className="flex gap-1">
+                      {[1, 2.5, 5, 10].map(step => (
+                        <button
+                          key={step}
+                          onClick={() => setWeightStep(ei, step)}
+                          className="text-xs px-1.5 py-1 rounded font-bold transition-colors"
+                          style={{
+                            background: entry.weightStep === step ? 'var(--accent)' : 'var(--bg-card2)',
+                            color: entry.weightStep === step ? 'white' : 'var(--text-dim)'
+                          }}
+                        >{step}</button>
+                      ))}
+                    </div>
+                  )}
+                  <span className="text-2xl">{categoryEmoji[entry.exercise.category]}</span>
+                </div>
               </div>
 
               {/* 세트 목록 */}
-              <div className="px-4 py-1">
+              <div className="px-3 py-1">
                 {entry.sets.map((set, si) => (
                   <div key={si}
-                    className="py-2.5 transition-all"
+                    className="flex items-center gap-1 py-2 w-full overflow-hidden transition-all"
                     style={{
                       borderBottom: si < entry.sets.length - 1 ? '1px solid var(--border)' : 'none',
                       opacity: set.done ? 0.5 : 1
                     }}>
-                    {/* 1줄: SET N 레이블 + 완료/삭제 버튼 */}
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold tracking-wide"
-                        style={{ color: set.done ? 'var(--accent)' : 'var(--text-dim)' }}>
-                        SET {si + 1}
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => toggleDone(ei, si)}
-                          className="done-btn"
-                          style={{
-                            background: set.done ? 'var(--accent)' : 'transparent',
-                            borderColor: set.done ? 'var(--accent)' : '#555',
-                            color: set.done ? 'white' : '#aaa',
-                            padding: '3px 12px', fontSize: '12px'
-                          }}
-                        >
-                          {set.done ? '✓' : '○'}
-                        </button>
-                        <button onClick={() => removeSet(ei, si)}
-                          className="w-6 h-6 flex items-center justify-center rounded text-xs"
-                          style={{ color: 'var(--text-dim)', background: 'var(--bg-card2)' }}>✕</button>
-                      </div>
-                    </div>
-                    {/* 2줄: kg 입력 그룹 + 횟수/시간 입력 그룹 */}
-                    <div className="flex items-center gap-2">
-                      {/* kg 그룹 */}
-                      {entry.exercise.measure_type !== 'time' && (
-                        <div className="flex items-center gap-1 flex-1 min-w-0">
-                          <button onClick={() => updateSet(ei, si, 'weight_kg', -2.5)} className="ctrl-btn w-9 h-9 text-sm flex-shrink-0">−</button>
-                          <input
-                            type="number"
-                            value={set.weight_kg}
-                            onChange={e => setInputValue(ei, si, 'weight_kg', Number(e.target.value))}
-                            className="input-dark flex-1 min-w-0 py-2 text-sm text-center"
-                          />
-                          <button onClick={() => updateSet(ei, si, 'weight_kg', 2.5)} className="ctrl-btn w-9 h-9 text-sm flex-shrink-0">+</button>
-                          <span className="text-xs w-6 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>kg</span>
-                        </div>
-                      )}
-                      {/* 횟수/시간 그룹 */}
-                      <div className="flex items-center gap-1 flex-1 min-w-0">
-                        <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? -10 : -1)} className="ctrl-btn w-9 h-9 text-sm flex-shrink-0">−</button>
+                    {/* SET 번호 */}
+                    <span className="w-6 text-center text-xs font-bold flex-shrink-0"
+                      style={{ color: set.done ? 'var(--accent)' : 'var(--text-dim)' }}>
+                      {si + 1}
+                    </span>
+
+                    {/* kg 그룹 */}
+                    {entry.exercise.measure_type !== 'time' && (
+                      <>
+                        <button onClick={() => updateSet(ei, si, 'weight_kg', -entry.weightStep)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">−</button>
                         <input
                           type="number"
-                          value={set.reps}
-                          onChange={e => setInputValue(ei, si, 'reps', Number(e.target.value))}
-                          className="input-dark flex-1 min-w-0 py-2 text-sm text-center"
+                          value={set.weight_kg}
+                          onChange={e => setInputValue(ei, si, 'weight_kg', Number(e.target.value))}
+                          className="input-dark flex-1 min-w-0 py-1.5 text-sm text-center"
                         />
-                        <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? 10 : 1)} className="ctrl-btn w-9 h-9 text-sm flex-shrink-0">+</button>
-                        <span className="text-xs w-6 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>
-                          {entry.exercise.measure_type === 'time' ? '초' : '회'}
-                        </span>
-                      </div>
-                    </div>
+                        <button onClick={() => updateSet(ei, si, 'weight_kg', entry.weightStep)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">+</button>
+                        <span className="text-xs w-4 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>kg</span>
+                      </>
+                    )}
+
+                    {/* 횟수/시간 그룹 */}
+                    <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? -10 : -1)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">−</button>
+                    <input
+                      type="number"
+                      value={set.reps}
+                      onChange={e => setInputValue(ei, si, 'reps', Number(e.target.value))}
+                      className="input-dark flex-1 min-w-0 py-1.5 text-sm text-center"
+                    />
+                    <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? 10 : 1)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">+</button>
+                    <span className="text-xs w-4 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>
+                      {entry.exercise.measure_type === 'time' ? '초' : '회'}
+                    </span>
+
+                    {/* 완료 버튼 */}
+                    <button
+                      onClick={() => toggleDone(ei, si)}
+                      className="done-btn w-8 h-7 text-xs flex-shrink-0 flex items-center justify-center"
+                      style={{
+                        background: set.done ? 'var(--accent)' : 'transparent',
+                        borderColor: set.done ? 'var(--accent)' : '#555',
+                        color: set.done ? 'white' : '#aaa',
+                        padding: 0
+                      }}
+                    >
+                      {set.done ? '✓' : '○'}
+                    </button>
+
+                    {/* 삭제 버튼 */}
+                    <button onClick={() => removeSet(ei, si)}
+                      className="w-6 h-7 flex items-center justify-center rounded text-xs flex-shrink-0"
+                      style={{ color: 'var(--text-dim)', background: 'var(--bg-card2)' }}>✕</button>
                   </div>
                 ))}
               </div>
