@@ -444,20 +444,20 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
                   <span className="w-6 flex-shrink-0" />
                   {entry.exercise.measure_type !== 'time' ? (
                     <>
-                      <span className="w-7 flex-shrink-0" />
-                      <span className="flex-1 text-center text-xs" style={{ color: 'var(--text-dim)' }}>kg</span>
-                      <span className="w-7 flex-shrink-0" />
-                      <span className="w-7 flex-shrink-0" />
-                      <span className="flex-1 text-center text-xs" style={{ color: 'var(--text-dim)' }}>횟수</span>
-                      <span className="w-7 flex-shrink-0" />
+                      <span className="w-6 flex-shrink-0" />
+                      <span className="flex-1 text-center text-xs whitespace-nowrap" style={{ color: 'var(--text-dim)' }}>kg</span>
+                      <span className="w-6 flex-shrink-0" />
+                      <span className="w-6 flex-shrink-0" />
+                      <span className="flex-1 text-center text-xs whitespace-nowrap" style={{ color: 'var(--text-dim)' }}>횟수</span>
+                      <span className="w-6 flex-shrink-0" />
                       <span className="w-8 flex-shrink-0" />
                       <span className="w-6 flex-shrink-0" />
                     </>
                   ) : (
                     <>
-                      <span className="w-7 flex-shrink-0" />
-                      <span className="flex-1 text-center text-xs" style={{ color: 'var(--text-dim)' }}>분</span>
-                      <span className="w-7 flex-shrink-0" />
+                      <span className="w-6 flex-shrink-0" />
+                      <span className="flex-1 text-center text-xs whitespace-nowrap" style={{ color: 'var(--text-dim)' }}>분</span>
+                      <span className="w-6 flex-shrink-0" />
                       <span className="w-8 flex-shrink-0" />
                       <span className="w-6 flex-shrink-0" />
                     </>
@@ -465,7 +465,7 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
                 </div>
                 {entry.sets.map((set, si) => (
                   <div key={si}
-                    className="flex items-center gap-1 py-2 w-full overflow-hidden transition-all"
+                    className="flex items-center gap-1 py-2 w-full transition-all"
                     style={{
                       borderBottom: si < entry.sets.length - 1 ? '1px solid var(--border)' : 'none',
                       opacity: set.done ? 0.5 : 1
@@ -479,26 +479,26 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
                     {/* kg 그룹 */}
                     {entry.exercise.measure_type !== 'time' && (
                       <>
-                        <button onClick={() => updateSet(ei, si, 'weight_kg', -entry.weightStep)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">−</button>
+                        <button onClick={() => updateSet(ei, si, 'weight_kg', -entry.weightStep)} className="ctrl-btn w-6 h-7 text-sm flex-shrink-0">−</button>
                         <input
                           type="number"
                           value={set.weight_kg}
                           onChange={e => setInputValue(ei, si, 'weight_kg', Number(e.target.value))}
-                          className="input-dark flex-1 min-w-[40px] py-1.5 px-1 text-sm text-center"
+                          className="input-dark flex-1 min-w-0 py-1.5 px-1 text-sm text-center"
                         />
-                        <button onClick={() => updateSet(ei, si, 'weight_kg', entry.weightStep)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">+</button>
+                        <button onClick={() => updateSet(ei, si, 'weight_kg', entry.weightStep)} className="ctrl-btn w-6 h-7 text-sm flex-shrink-0">+</button>
                       </>
                     )}
 
                     {/* 횟수/시간 그룹 */}
-                    <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? -10 : -1)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">−</button>
+                    <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? -10 : -1)} className="ctrl-btn w-6 h-7 text-sm flex-shrink-0">−</button>
                     <input
                       type="number"
                       value={set.reps}
                       onChange={e => setInputValue(ei, si, 'reps', Number(e.target.value))}
-                      className="input-dark flex-1 min-w-[40px] py-1.5 px-1 text-sm text-center"
+                      className="input-dark flex-1 min-w-0 py-1.5 px-1 text-sm text-center"
                     />
-                    <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? 10 : 1)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">+</button>
+                    <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? 10 : 1)} className="ctrl-btn w-6 h-7 text-sm flex-shrink-0">+</button>
 
                     {/* 완료 버튼 */}
                     <button
