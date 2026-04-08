@@ -439,6 +439,26 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
 
               {/* 세트 목록 */}
               <div className="px-3 py-1">
+                {/* 컬럼 헤더 */}
+                <div className="flex items-center gap-1 pb-1" style={{ borderBottom: '1px solid var(--border)' }}>
+                  <span className="w-6 flex-shrink-0" />
+                  {entry.exercise.measure_type !== 'time' ? (
+                    <>
+                      <span className="w-7 flex-shrink-0" />
+                      <span className="flex-1 text-center text-xs" style={{ color: 'var(--text-dim)' }}>kg</span>
+                      <span className="w-7 flex-shrink-0" />
+                      <span className="w-7 flex-shrink-0" />
+                      <span className="flex-1 text-center text-xs" style={{ color: 'var(--text-dim)' }}>횟수</span>
+                      <span className="w-7 flex-shrink-0" />
+                    </>
+                  ) : (
+                    <>
+                      <span className="w-7 flex-shrink-0" />
+                      <span className="flex-1 text-center text-xs" style={{ color: 'var(--text-dim)' }}>분</span>
+                      <span className="w-7 flex-shrink-0" />
+                    </>
+                  )}
+                </div>
                 {entry.sets.map((set, si) => (
                   <div key={si}
                     className="flex items-center gap-1 py-2 w-full overflow-hidden transition-all"
