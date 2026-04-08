@@ -115,7 +115,9 @@ export default function AdminPage() {
               color: activeCategory === cat ? 'white' : 'var(--text-secondary)'
             }}
           >
-            {cat === 'all' ? '전체' : categoryLabel[cat]}
+            {cat === 'all'
+              ? `전체 (${exercises.length})`
+              : `${categoryLabel[cat]} (${exercises.filter(e => e.category === cat).length})`}
           </button>
         ))}
       </div>
