@@ -59,7 +59,6 @@ export default function AdminPage() {
     }
     setExercises(prev => prev.map(ex => ex.id === exerciseId ? { ...ex, image_url: publicUrl } : ex))
     setUploading(null)
-    fetchExercises()
   }
 
   const handleDrop = async (e: React.DragEvent, exerciseId: string) => {
