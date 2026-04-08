@@ -20,7 +20,7 @@ export default function AdminPage() {
   }, [])
 
   const fetchExercises = async () => {
-    const { data } = await supabase.from('exercises').select('*').order('category').order('name')
+    const { data } = await supabase.from('exercises').select('*').order('category').order('sort_order', { ascending: true })
     setExercises(data || [])
   }
 
