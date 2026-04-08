@@ -119,6 +119,7 @@ export default function AdminPage() {
               : `${categoryLabel[cat]} (${exercises.filter(e => e.category === cat).length})`}
           </button>
         ))}
+        <span className="flex-shrink-0 w-4" />
       </div>
 
       {/* 종목 목록 */}
