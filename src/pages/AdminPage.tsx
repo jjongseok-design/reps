@@ -77,7 +77,7 @@ export default function AdminPage() {
     const filename = `${ex.id}.${ext}`
     await supabase.storage.from('Exercise-images').remove([filename])
     await supabase.from('exercises').update({ image_url: null }).eq('id', ex.id)
-    await fetchExercises()
+    setExercises(prev => prev.map(e => e.id === ex.id ? { ...e, image_url: undefined } : e))
     setDeleting(null)
   }
 
