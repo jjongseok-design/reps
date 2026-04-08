@@ -1,250 +1,200 @@
-import { useEffect, useState, useRef } from 'react'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  'https://zsafusllrolzllwcyyjh.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzYWZ1c2xscm9semxsd2N5eWpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNjYzOTEsImV4cCI6MjA5MDc0MjM5MX0.2POT3ABgGNhBs4Fyj_43X2QXm7rge2ZQL_GMoVbPqDQ'
-)
-
-const BUCKET = 'Exercise-images'
+import { useEffect, useState } from 'react'
+import { supabase } from '../lib/supabase'
+import type { Exercise } from '../types/index'
 
 const categoryLabel: Record<string, string> = {
-  legs: '하체',
-  chest: '가슴',
-  back: '등',
-  shoulder: '어깨',
-  arm: '팔',
-  core: '코어',
-  weightlifting: '역도',
-  cardio: '유산소',
-  etc: '기타',
+  legs: '하체', chest: '가슴', back: '등', shoulder: '어깨',
+  arm: '팔', core: '코어', weightlifting: '역도', cardio: '유산소', etc: '기타'
 }
-
 const categoryOrder = ['legs', 'chest', 'back', 'shoulder', 'arm', 'core', 'weightlifting', 'cardio', 'etc']
-
-interface Exercise {
-  id: string
-  name: string
-  category: string
-  image_url?: string
-}
 
 export default function AdminPage() {
   const [exercises, setExercises] = useState<Exercise[]>([])
-  const [activeCategory, setActiveCategory] = useState('legs')
+  const [activeCategory, setActiveCategory] = useState('all')
   const [uploading, setUploading] = useState<string | null>(null)
-  const [message, setMessage] = useState('')
   const [dragOver, setDragOver] = useState<string | null>(null)
-  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
     fetchExercises()
   }, [])
 
   const fetchExercises = async () => {
-    const { data } = await supabase
-      .from('exercises')
-      .select('id, name, category, image_url')
-      .order('name')
-    if (data) setExercises(data)
-  }
-
-  const uploadImage = async (exerciseId: string, file: File) => {
-    setUploading(exerciseId)
-    setMessage('')
-    try {
-      const ext = file.name.split('.').pop()
-      const filename = `${exerciseId}.${ext}`
-
-      const { error: uploadError } = await supabase.storage
-        .from(BUCKET)
-        .upload(filename, file, { upsert: true })
-
-      if (uploadError) throw uploadError
-
-      const { data: urlData } = supabase.storage
-        .from(BUCKET)
-        .getPublicUrl(filename)
-
-      const publicUrl = urlData.publicUrl
-
-      const { error: updateError } = await supabase
-        .from('exercises')
-        .update({ image_url: publicUrl })
-        .eq('id', exerciseId)
-
-      if (updateError) throw updateError
-
-      setExercises(prev =>
-        prev.map(ex => ex.id === exerciseId ? { ...ex, image_url: publicUrl } : ex)
-      )
-      setMessage('업로드 완료!')
-    } catch (err: any) {
-      setMessage('업로드 실패: ' + err.message)
-    } finally {
-      setUploading(null)
+    const { data, error } = await supabase.from('exercises').select('*').order('category').order('sort_order', { ascending: true })
+    if (error) {
+      alert('데이터 로드 실패: ' + error.message)
+      return
     }
+    setExercises(data || [])
   }
 
-  const handleDrop = (e: React.DragEvent, exerciseId: string) => {
+  const handleUpload = async (exerciseId: string, file: File) => {
+    const ext = file.name.split('.').pop()?.toLowerCase()
+    if (!['gif', 'png', 'jpg', 'jpeg', 'webp'].includes(ext || '')) {
+      alert('gif, png, jpg, webp 파일만 업로드 가능합니다.')
+      return
+    }
+    setUploading(exerciseId)
+    const filename = `${exerciseId}.${ext}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('Exercise-images')
+      .upload(filename, file, { upsert: true })
+
+    if (uploadError) {
+      alert('업로드 실패: ' + uploadError.message)
+      setUploading(null)
+      return
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('Exercise-images')
+      .getPublicUrl(filename)
+
+    const urlWithCache = `${publicUrl}?t=${Date.now()}`
+
+    const { error: updateError, count } = await supabase.from('exercises').update({ image_url: urlWithCache }, { count: 'exact' }).eq('id', exerciseId)
+    if (updateError || count === 0) {
+      alert('DB 저장 실패: ' + (updateError?.message || 'RLS 정책 문제 — Supabase에서 UPDATE 정책 확인 필요'))
+      setUploading(null)
+      return
+    }
+    setExercises(prev => prev.map(ex => ex.id === exerciseId ? { ...ex, image_url: urlWithCache } : ex))
+    setUploading(null)
+  }
+
+  const handleDrop = async (e: React.DragEvent, exerciseId: string) => {
     e.preventDefault()
     setDragOver(null)
     const file = e.dataTransfer.files[0]
-    if (file) uploadImage(exerciseId, file)
+    if (file) await handleUpload(exerciseId, file)
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, exerciseId: string) => {
+  const handleDelete = async (ex: Exercise) => {
+    if (!ex.image_url) return
+    if (!confirm(`"${ex.name}" 이미지를 삭제할까요?`)) return
+    setDeleting(ex.id)
+
+    const ext = ex.image_url.split('.').pop()?.split('?')[0]
+    const filename = `${ex.id}.${ext}`
+    await supabase.storage.from('Exercise-images').remove([filename])
+    await supabase.from('exercises').update({ image_url: null }).eq('id', ex.id)
+    setExercises(prev => prev.map(e => e.id === ex.id ? { ...e, image_url: undefined } : e))
+    setDeleting(null)
+  }
+
+  const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>, exerciseId: string) => {
     const file = e.target.files?.[0]
-    if (file) uploadImage(exerciseId, file)
+    if (file) await handleUpload(exerciseId, file)
+    e.target.value = ''
   }
 
-  const deleteImage = async (exerciseId: string, imageUrl: string) => {
-    if (!confirm('이미지를 삭제할까요?')) return
-    setMessage('')
-    try {
-      // Storage에서 파일 삭제
-      const filename = imageUrl.split('/').pop()
-      if (filename) {
-        await supabase.storage.from(BUCKET).remove([filename])
-      }
-      // DB에서 image_url 제거
-      const { error } = await supabase
-        .from('exercises')
-        .update({ image_url: null })
-        .eq('id', exerciseId)
-      if (error) throw error
-      setExercises(prev =>
-        prev.map(ex => ex.id === exerciseId ? { ...ex, image_url: undefined } : ex)
-      )
-      setMessage('삭제 완료!')
-    } catch (err: any) {
-      setMessage('삭제 실패: ' + err.message)
-    }
-  }
-
-  const filtered = exercises.filter(ex => ex.category === activeCategory)
+  const filtered = exercises.filter(ex =>
+    activeCategory === 'all' || ex.category === activeCategory
+  )
 
   return (
-    <div style={{ background: '#0a0a0a', minHeight: '100vh', color: 'white', fontFamily: 'Noto Sans KR, sans-serif' }}>
-      {/* 헤더 */}
-      <div style={{ padding: '20px 16px 12px', borderBottom: '1px solid #222', position: 'sticky', top: 0, background: '#0a0a0a', zIndex: 10 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12 }}>관리자 - 이미지 관리</h1>
-        {message && (
-          <div style={{ padding: '8px 12px', borderRadius: 8, background: message.includes('실패') ? '#7f1d1d' : '#14532d', fontSize: 13, marginBottom: 8 }}>
-            {message}
-          </div>
-        )}
-        {/* 카테고리 탭 */}
-        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {categoryOrder.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              style={{
-                padding: '6px 14px',
-                borderRadius: 999,
-                border: 'none',
-                cursor: 'pointer',
-                flexShrink: 0,
-                fontSize: 13,
-                fontWeight: 600,
-                background: activeCategory === cat ? '#f97316' : '#1a1a1a',
-                color: activeCategory === cat ? 'white' : '#888',
-              }}
-            >
-              {categoryLabel[cat]}
-            </button>
-          ))}
-        </div>
+    <div className="min-h-screen pb-32 max-w-2xl mx-auto px-4" style={{ background: 'var(--bg-base)' }}>
+      <div className="py-6">
+        <h1 className="text-2xl font-bold text-white mb-1">Admin</h1>
+        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          종목 이미지 관리 · 전체 {exercises.length}개
+        </p>
       </div>
 
-      {/* 종목 리스트 */}
-      <div style={{ padding: '8px 16px' }}>
-        {filtered.map(ex => (
-          <div
-            key={ex.id}
+      {/* 카테고리 탭 */}
+      <div className="flex gap-2 overflow-x-auto pb-4" style={{ scrollbarWidth: 'none', marginLeft: '-1rem', marginRight: '-1rem', paddingLeft: '1rem', paddingRight: '1rem', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+        {['all', ...categoryOrder].map(cat => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              padding: '10px 0',
-              borderBottom: '1px solid #1a1a1a',
+              background: activeCategory === cat ? 'var(--accent)' : 'var(--bg-card2)',
+              color: activeCategory === cat ? 'white' : 'var(--text-secondary)'
             }}
           >
+            {cat === 'all'
+              ? `전체 (${exercises.length})`
+              : `${categoryLabel[cat]} (${exercises.filter(e => e.category === cat).length})`}
+          </button>
+        ))}
+        <span className="flex-shrink-0 w-4" />
+      </div>
+
+      {/* 종목 목록 */}
+      <div className="space-y-2">
+        {filtered.map(ex => (
+          <div key={ex.id} className="card p-3 flex items-center gap-3">
             {/* 이미지 미리보기 */}
-            <div style={{ position: 'relative', flexShrink: 0 }}>
-              <div
-                style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: 8,
-                  background: '#1a1a1a',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                {ex.image_url ? (
-                  <img src={ex.image_url} alt={ex.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <span style={{ fontSize: 24 }}>📷</span>
-                )}
-              </div>
-              {ex.image_url && (
-                <button
-                  onClick={() => deleteImage(ex.id, ex.image_url!)}
-                  style={{
-                    position: 'absolute',
-                    top: -6,
-                    right: -6,
-                    width: 18,
-                    height: 18,
-                    borderRadius: '50%',
-                    background: '#ef4444',
-                    border: 'none',
-                    color: 'white',
-                    fontSize: 10,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 700,
-                  }}
-                >✕</button>
+            <div
+              className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
+              style={{ background: 'var(--bg-card2)' }}
+            >
+              {ex.image_url ? (
+                <img
+                  src={ex.image_url}
+                  alt={ex.name}
+                  className="w-full h-full object-contain"
+                  style={{ filter: 'invert(1) grayscale(100%) brightness(0.7) contrast(1.2)', mixBlendMode: 'screen' }}
+                />
+              ) : (
+                <span className="text-2xl opacity-30">📷</span>
               )}
             </div>
 
-            {/* 종목명 */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{ex.name}</div>
-              {/* 드래그앤드롭 영역 */}
-              <div
-                onDragOver={e => { e.preventDefault(); setDragOver(ex.id) }}
-                onDragLeave={() => setDragOver(null)}
-                onDrop={e => handleDrop(e, ex.id)}
-                onClick={() => fileInputRefs.current[ex.id]?.click()}
-                style={{
-                  padding: '6px 10px',
-                  borderRadius: 6,
-                  border: `1px dashed ${dragOver === ex.id ? '#f97316' : '#333'}`,
-                  background: dragOver === ex.id ? 'rgba(249,115,22,0.1)' : 'transparent',
-                  cursor: 'pointer',
-                  fontSize: 12,
-                  color: '#666',
-                  textAlign: 'center',
-                }}
-              >
-                {uploading === ex.id ? '업로드 중...' : '이미지 드롭 또는 클릭'}
-              </div>
-              <input
-                type="file"
-                accept="image/*,.gif"
-                style={{ display: 'none' }}
-                ref={el => { fileInputRefs.current[ex.id] = el }}
-                onChange={e => handleFileChange(e, ex.id)}
-              />
+            {/* 종목 정보 */}
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-white text-sm truncate">{ex.name}</p>
+              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                {categoryLabel[ex.category] || ex.category}
+              </p>
+              {ex.image_url && (
+                <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-dim)' }}>
+                  ✓ 이미지 있음
+                </p>
+              )}
             </div>
+
+            {/* 삭제 버튼 */}
+            {ex.image_url && (
+              <button
+                onClick={() => handleDelete(ex)}
+                disabled={deleting === ex.id}
+                className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-all"
+                style={{ background: 'var(--bg-card2)', color: deleting === ex.id ? 'var(--text-dim)' : '#f87171' }}
+              >
+                {deleting === ex.id ? '…' : '✕'}
+              </button>
+            )}
+
+            {/* 드래그앤드롭 업로드 */}
+            <label
+              htmlFor={`file-${ex.id}`}
+              onDragEnter={e => { e.preventDefault(); setDragOver(ex.id) }}
+              onDragOver={e => { e.preventDefault(); setDragOver(ex.id) }}
+              onDragLeave={() => setDragOver(null)}
+              onDrop={e => handleDrop(e, ex.id)}
+              className="flex-shrink-0 w-24 h-12 flex items-center justify-center rounded-xl cursor-pointer transition-all text-xs font-medium"
+              style={{
+                border: `2px dashed ${dragOver === ex.id ? 'var(--accent)' : 'var(--border)'}`,
+                background: dragOver === ex.id ? 'var(--accent-dim)' : 'transparent',
+                color: dragOver === ex.id ? 'var(--accent)' : 'var(--text-dim)'
+              }}
+            >
+              {uploading === ex.id
+                ? <span style={{ pointerEvents: 'none', color: 'var(--accent)' }}>업로드 중...</span>
+                : <span style={{ pointerEvents: 'none' }}>{ex.image_url ? '🔄 교체' : '+ 이미지'}</span>
+              }
+            </label>
+            <input
+              id={`file-${ex.id}`}
+              type="file"
+              accept=".gif,.png,.jpg,.jpeg,.webp"
+              className="hidden"
+              onChange={e => handleFileInput(e, ex.id)}
+              disabled={uploading === ex.id}
+            />
           </div>
         ))}
       </div>
