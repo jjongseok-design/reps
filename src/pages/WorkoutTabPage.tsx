@@ -460,7 +460,7 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
                           type="number"
                           value={set.weight_kg}
                           onChange={e => setInputValue(ei, si, 'weight_kg', Number(e.target.value))}
-                          className="input-dark flex-1 min-w-0 py-1.5 text-sm text-center"
+                          className="input-dark flex-1 min-w-[40px] py-1.5 px-1 text-sm text-center"
                         />
                         <button onClick={() => updateSet(ei, si, 'weight_kg', entry.weightStep)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">+</button>
                         <span className="text-xs w-4 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>kg</span>
@@ -473,7 +473,7 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
                       type="number"
                       value={set.reps}
                       onChange={e => setInputValue(ei, si, 'reps', Number(e.target.value))}
-                      className="input-dark flex-1 min-w-0 py-1.5 text-sm text-center"
+                      className="input-dark flex-1 min-w-[40px] py-1.5 px-1 text-sm text-center"
                     />
                     <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? 10 : 1)} className="ctrl-btn w-7 h-7 text-sm flex-shrink-0">+</button>
                     <span className="text-xs w-4 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>
