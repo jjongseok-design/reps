@@ -89,7 +89,7 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
   }
 
   const fetchExercises = async () => {
-    const { data } = await supabase.from('exercises').select('*').eq('is_hidden', false).order('category').order('name')
+    const { data } = await supabase.from('exercises').select('*').eq('is_hidden', false).order('category').order('sort_order', { ascending: true })
     setExercises(data || [])
   }
 
