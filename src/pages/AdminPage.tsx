@@ -20,7 +20,11 @@ export default function AdminPage() {
   }, [])
 
   const fetchExercises = async () => {
-    const { data } = await supabase.from('exercises').select('*').order('category').order('sort_order', { ascending: true })
+    const { data, error } = await supabase.from('exercises').select('*').order('category').order('sort_order', { ascending: true })
+    if (error) {
+      alert('데이터 로드 실패: ' + error.message)
+      return
+    }
     setExercises(data || [])
   }
 
@@ -53,8 +57,9 @@ export default function AdminPage() {
       setUploading(null)
       return
     }
-    await fetchExercises()
+    setExercises(prev => prev.map(ex => ex.id === exerciseId ? { ...ex, image_url: publicUrl } : ex))
     setUploading(null)
+    fetchExercises()
   }
 
   const handleDrop = async (e: React.DragEvent, exerciseId: string) => {
