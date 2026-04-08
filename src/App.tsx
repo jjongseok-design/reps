@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
+﻿import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import AuthPage from './pages/AuthPage'
 import WorkoutTabPage from './pages/WorkoutTabPage'
@@ -13,7 +13,7 @@ function AppRoutes() {
 
   if (loading) return (
     <div className="min-h-screen bg-dark flex items-center justify-center">
-      <p className="text-gray-500">로딩 중...</p>
+      <p className="text-gray-500">로딩 중....</p>
     </div>
   )
 
@@ -48,3 +48,4 @@ export default function App() {
     </AuthProvider>
   )
 }
+
