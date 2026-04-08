@@ -6,7 +6,8 @@
       "Bash(git push:*)",
       "Bash(npm install:*)",
       "Bash(curl:*)",
-      "Bash(npx supabase:*)"
+      "Bash(npx supabase:*)",
+      "Bash(git rm:*)"
     ]
   }
 }
