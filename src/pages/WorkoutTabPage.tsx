@@ -32,9 +32,7 @@ export default function WorkoutTabPage() {
   const [newExerciseName, setNewExerciseName] = useState('')
   const [newExerciseCategory, setNewExerciseCategory] = useState('legs')
   const [addingExercise, setAddingExercise] = useState(false)
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
-  const [deleteMode, setDeleteMode] = useState(false)
-  const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new Set())
+const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategoryTab, setActiveCategoryTab] = useState('all')
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set())
@@ -182,7 +180,6 @@ export default function WorkoutTabPage() {
       sets: lastSets || [{ weight_kg: 0, reps: 10, done: false }]
     }])
     setShowPicker(false)
-    setDeleteMode(false)
   }
 
   const handleAddSelected = async () => {
