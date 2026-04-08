@@ -53,9 +53,9 @@ export default function AdminPage() {
 
     const urlWithCache = `${publicUrl}?t=${Date.now()}`
 
-    const { error: updateError } = await supabase.from('exercises').update({ image_url: urlWithCache }).eq('id', exerciseId)
-    if (updateError) {
-      alert('DB 업데이트 실패: ' + updateError.message)
+    const { error: updateError, count } = await supabase.from('exercises').update({ image_url: urlWithCache }, { count: 'exact' }).eq('id', exerciseId)
+    if (updateError || count === 0) {
+      alert('DB 저장 실패: ' + (updateError?.message || 'RLS 정책 문제 — Supabase에서 UPDATE 정책 확인 필요'))
       setUploading(null)
       return
     }
