@@ -450,12 +450,16 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
                       <span className="w-7 flex-shrink-0" />
                       <span className="flex-1 text-center text-xs" style={{ color: 'var(--text-dim)' }}>횟수</span>
                       <span className="w-7 flex-shrink-0" />
+                      <span className="w-8 flex-shrink-0" />
+                      <span className="w-6 flex-shrink-0" />
                     </>
                   ) : (
                     <>
                       <span className="w-7 flex-shrink-0" />
                       <span className="flex-1 text-center text-xs" style={{ color: 'var(--text-dim)' }}>분</span>
                       <span className="w-7 flex-shrink-0" />
+                      <span className="w-8 flex-shrink-0" />
+                      <span className="w-6 flex-shrink-0" />
                     </>
                   )}
                 </div>
