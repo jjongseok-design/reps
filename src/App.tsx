@@ -1,4 +1,4 @@
-﻿import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
+﻿import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import AuthPage from './pages/AuthPage'
 import WorkoutTabPage from './pages/WorkoutTabPage'
@@ -10,6 +10,7 @@ import AdminPage from './pages/AdminPage'
 
 function AppRoutes() {
   const { user, loading } = useAuth()
+  const location = useLocation()
 
   if (loading) return (
     <div className="min-h-screen bg-dark flex items-center justify-center">
@@ -34,7 +35,7 @@ function AppRoutes() {
         <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<Navigate to="/workout" />} />
       </Routes>
-      <BottomNav />
+      {location.pathname !== '/admin' && <BottomNav />}
     </>
   )
 }
