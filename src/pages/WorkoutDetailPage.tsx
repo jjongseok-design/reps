@@ -96,8 +96,8 @@ export default function WorkoutDetailPage() {
   return (
     <div className="min-h-screen pb-24 max-w-md mx-auto" style={{ background: 'var(--bg-base)' }}>
       {/* 헤더 */}
-      <div className="sticky top-0 z-10 px-5 py-4"
-        style={{ background: 'rgba(10,10,10,0.95)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}>
+      <div className="sticky top-0 z-10 px-5 pb-4"
+        style={{ background: 'rgba(10,10,10,0.95)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)', paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)}
             className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"

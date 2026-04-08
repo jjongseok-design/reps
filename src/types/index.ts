@@ -1,9 +1,12 @@
 export interface Exercise {
   id: string
   name: string
-  category: 'legs' | 'chest' | 'back' | 'shoulder' | 'arm' | 'core' | 'cardio'
+  category: 'legs' | 'chest' | 'back' | 'shoulder' | 'arm' | 'core' | 'weightlifting' | 'cardio' | 'etc'
   calories_per_kg_rep: number
   measure_type?: 'reps' | 'time'
+  is_hidden?: boolean
+  image_url?: string
+  description?: string
 }
 
 export interface WorkoutSession {

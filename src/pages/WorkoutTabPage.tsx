@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import type { Exercise } from '../types/index'
 import RestTimer from '../components/RestTimer'
+import ExerciseDetailModal from '../components/ExerciseDetailModal'
 
 interface SetInput {
   weight_kg: number
@@ -33,6 +34,11 @@ export default function WorkoutTabPage() {
   const [addingExercise, setAddingExercise] = useState(false)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
   const [deleteMode, setDeleteMode] = useState(false)
+  const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new Set())
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeCategoryTab, setActiveCategoryTab] = useState('all')
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set())
+  const [detailExercise, setDetailExercise] = useState<Exercise | null>(null)
   const startedAt = useRef<Date>(new Date())
   const timerRef = useRef<any>(null)
 
@@ -81,7 +87,7 @@ export default function WorkoutTabPage() {
   }
 
   const fetchExercises = async () => {
-    const { data } = await supabase.from('exercises').select('*').order('category').order('name')
+    const { data } = await supabase.from('exercises').select('*').eq('is_hidden', false).order('category').order('name')
     setExercises(data || [])
   }
 
@@ -179,6 +185,39 @@ export default function WorkoutTabPage() {
     setDeleteMode(false)
   }
 
+  const handleAddSelected = async () => {
+    const selected = exercises.filter(ex => selectedExerciseIds.has(ex.id))
+    const newEntries: ExerciseEntry[] = []
+    for (const ex of selected) {
+      const lastSets = await fetchLastSets(ex.id)
+      newEntries.push({
+        exercise: ex,
+        sets: lastSets || [{ weight_kg: 0, reps: 10, done: false }]
+      })
+    }
+    setEntries(prev => [...prev, ...newEntries])
+    setShowPicker(false)
+    setSelectedExerciseIds(new Set())
+    setSearchQuery('')
+    setActiveCategoryTab('all')
+  }
+
+  const toggleSelectExercise = (id: string) => {
+    setSelectedExerciseIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  const toggleBookmark = (id: string) => {
+    setBookmarkedIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
   const addSet = (ei: number) => {
     setEntries(prev => prev.map((entry, i) => {
       if (i !== ei) return entry
@@ -274,26 +313,21 @@ export default function WorkoutTabPage() {
   }
 
   const categoryLabel: Record<string, string> = {
-    legs: '하체', chest: '가슴', back: '등', shoulder: '어깨', arm: '팔', core: '코어'
+    legs: '하체', chest: '가슴', back: '등', shoulder: '어깨',
+    arm: '팔', core: '코어', weightlifting: '역도', cardio: '유산소', etc: '기타'
   }
 
-  const categoryOrder = ['legs', 'chest', 'back', 'shoulder', 'arm', 'core']
+  const categoryOrder = ['legs', 'chest', 'back', 'shoulder', 'arm', 'core', 'weightlifting', 'cardio', 'etc']
 
   const categoryEmoji: Record<string, string> = {
-    legs: '🦵', chest: '💪', back: '🏋️', shoulder: '🔝', arm: '💪', core: '⚡', cardio: '🏃'
+    legs: '🦵', chest: '💪', back: '🏋️', shoulder: '🔝', arm: '💪', core: '⚡', weightlifting: '🏅', cardio: '🏃', etc: '🎯'
   }
 
-  const groupedRaw = exercises.reduce((acc, ex) => {
-    if (!acc[ex.category]) acc[ex.category] = []
-    acc[ex.category].push(ex)
-    return acc
-  }, {} as Record<string, Exercise[]>)
-
-  const grouped = Object.fromEntries(
-    categoryOrder
-      .filter(cat => groupedRaw[cat])
-      .map(cat => [cat, groupedRaw[cat]])
-  )
+  const filteredExercises = exercises.filter(ex => {
+    const matchesSearch = ex.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategory = activeCategoryTab === 'all' || ex.category === activeCategoryTab
+    return matchesSearch && matchesCategory
+  })
 
   // 운동 시작 전 화면
   if (!isActive) {
@@ -382,67 +416,68 @@ export default function WorkoutTabPage() {
               </div>
 
               {/* 세트 목록 */}
-              <div className="px-4 py-2">
+              <div className="px-4 py-1">
                 {entry.sets.map((set, si) => (
                   <div key={si}
-                    className="flex items-center gap-1 py-2 transition-all"
+                    className="py-2.5 transition-all"
                     style={{
                       borderBottom: si < entry.sets.length - 1 ? '1px solid var(--border)' : 'none',
                       opacity: set.done ? 0.5 : 1
                     }}>
-                    {/* 세트 번호 */}
-                    <span className="text-xs font-bold w-4 text-center flex-shrink-0"
-                      style={{ color: set.done ? 'var(--accent)' : 'var(--text-dim)' }}>
-                      {si + 1}
-                    </span>
-
-                    {/* kg */}
-                    {entry.exercise.measure_type !== 'time' && (
-                      <div className="flex items-center gap-0.5 flex-shrink-0">
-                        <button onClick={() => updateSet(ei, si, 'weight_kg', -2.5)} className="ctrl-btn w-5 h-7 text-xs flex-shrink-0">−</button>
+                    {/* 1줄: SET N 레이블 + 완료/삭제 버튼 */}
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold tracking-wide"
+                        style={{ color: set.done ? 'var(--accent)' : 'var(--text-dim)' }}>
+                        SET {si + 1}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => toggleDone(ei, si)}
+                          className="done-btn"
+                          style={{
+                            background: set.done ? 'var(--accent)' : 'transparent',
+                            borderColor: set.done ? 'var(--accent)' : '#555',
+                            color: set.done ? 'white' : '#aaa',
+                            padding: '3px 12px', fontSize: '12px'
+                          }}
+                        >
+                          {set.done ? '✓' : '○'}
+                        </button>
+                        <button onClick={() => removeSet(ei, si)}
+                          className="w-6 h-6 flex items-center justify-center rounded text-xs"
+                          style={{ color: 'var(--text-dim)', background: 'var(--bg-card2)' }}>✕</button>
+                      </div>
+                    </div>
+                    {/* 2줄: kg 입력 그룹 + 횟수/시간 입력 그룹 */}
+                    <div className="flex items-center gap-2">
+                      {/* kg 그룹 */}
+                      {entry.exercise.measure_type !== 'time' && (
+                        <div className="flex items-center gap-1 flex-1 min-w-0">
+                          <button onClick={() => updateSet(ei, si, 'weight_kg', -2.5)} className="ctrl-btn w-9 h-9 text-sm flex-shrink-0">−</button>
+                          <input
+                            type="number"
+                            value={set.weight_kg}
+                            onChange={e => setInputValue(ei, si, 'weight_kg', Number(e.target.value))}
+                            className="input-dark flex-1 min-w-0 py-2 text-sm text-center"
+                          />
+                          <button onClick={() => updateSet(ei, si, 'weight_kg', 2.5)} className="ctrl-btn w-9 h-9 text-sm flex-shrink-0">+</button>
+                          <span className="text-xs w-6 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>kg</span>
+                        </div>
+                      )}
+                      {/* 횟수/시간 그룹 */}
+                      <div className="flex items-center gap-1 flex-1 min-w-0">
+                        <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? -10 : -1)} className="ctrl-btn w-9 h-9 text-sm flex-shrink-0">−</button>
                         <input
                           type="number"
-                          value={set.weight_kg}
-                          onChange={e => setInputValue(ei, si, 'weight_kg', Number(e.target.value))}
-                          className="input-dark w-8 py-1 text-xs text-center"
+                          value={set.reps}
+                          onChange={e => setInputValue(ei, si, 'reps', Number(e.target.value))}
+                          className="input-dark flex-1 min-w-0 py-2 text-sm text-center"
                         />
-                        <button onClick={() => updateSet(ei, si, 'weight_kg', 2.5)} className="ctrl-btn w-5 h-7 text-xs flex-shrink-0">+</button>
-                        <span className="text-xs w-5 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>kg</span>
+                        <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? 10 : 1)} className="ctrl-btn w-9 h-9 text-sm flex-shrink-0">+</button>
+                        <span className="text-xs w-6 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>
+                          {entry.exercise.measure_type === 'time' ? '초' : '회'}
+                        </span>
                       </div>
-                    )}
-
-                    {/* 횟수 or 시간 */}
-                    <div className="flex items-center gap-0.5 flex-shrink-0">
-                      <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? -10 : -1)} className="ctrl-btn w-5 h-7 text-xs flex-shrink-0">−</button>
-                      <input
-                        type="number"
-                        value={set.reps}
-                        onChange={e => setInputValue(ei, si, 'reps', Number(e.target.value))}
-                        className="input-dark w-8 py-1 text-xs text-center"
-                      />
-                      <button onClick={() => updateSet(ei, si, 'reps', entry.exercise.measure_type === 'time' ? 10 : 1)} className="ctrl-btn w-5 h-7 text-xs flex-shrink-0">+</button>
-                      <span className="text-xs w-5 text-center flex-shrink-0" style={{ color: 'var(--text-dim)' }}>
-                        {entry.exercise.measure_type === 'time' ? '초' : '회'}
-                      </span>
-                    </div>
-
-                    {/* 완료 + 삭제 */}
-                    <div className="flex items-center gap-1 ml-auto flex-shrink-0">
-                      <button
-                        onClick={() => toggleDone(ei, si)}
-                        className="done-btn"
-                        style={{
-                          background: set.done ? 'var(--accent)' : 'transparent',
-                          borderColor: set.done ? 'var(--accent)' : '#555',
-                          color: set.done ? 'white' : '#aaa',
-                          padding: '2px 6px'
-                        }}
-                      >
-                        {set.done ? '✓' : '○'}
-                      </button>
-                      <button onClick={() => removeSet(ei, si)}
-                        className="text-xs w-5 h-5 flex items-center justify-center rounded"
-                        style={{ color: 'var(--text-dim)', background: 'var(--bg-card2)' }}>✕</button>
                     </div>
                   </div>
                 ))}
@@ -465,102 +500,149 @@ export default function WorkoutTabPage() {
         </button>
       </div>
 
-      {/* 운동 선택 모달 */}
+      {/* 운동 선택 모달 - 풀스크린 */}
       {showPicker && (
-        <div className="fixed inset-0 z-50 flex items-end" style={{ background: 'rgba(0,0,0,0.85)' }} onClick={() => { setShowPicker(false); setDeleteMode(false) }}>
-          <div className="w-full rounded-t-3xl max-h-[80vh] overflow-y-auto" style={{ background: '#0f0f0f', border: '1px solid var(--border)' }} onClick={e => e.stopPropagation()}>
-            <div className="sticky top-0 px-5 py-4" style={{ background: '#0f0f0f', borderBottom: '1px solid var(--border)' }}>
-              <div className="w-10 h-1 rounded-full mx-auto mb-3" style={{ background: 'var(--border)' }} />
-              <div className="flex items-center justify-between">
-                <h3 className="font-display text-2xl text-white">운동 선택</h3>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setDeleteMode(prev => !prev)}
-                    className="text-sm font-bold px-3 py-1.5 rounded-lg"
-                    style={{
-                      background: deleteMode ? 'rgba(239,68,68,0.15)' : 'var(--bg-card2)',
-                      color: deleteMode ? '#ef4444' : 'var(--text-secondary)'
-                    }}
-                  >{deleteMode ? '삭제 취소' : '삭제'}</button>
-                  <button
-                    onClick={() => setShowAddExercise(true)}
-                    className="text-sm font-bold px-3 py-1.5 rounded-lg"
-                    style={{ background: 'var(--accent-dim)', color: 'var(--accent)' }}
-                  >+ 추가</button>
-                </div>
+        <div className="fixed inset-0 z-50 flex flex-col" style={{ background: 'var(--bg-base)' }}>
+          {/* 상단 헤더 */}
+          <div className="flex-shrink-0" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
+            <div className="flex items-center px-4 py-3">
+              <button
+                onClick={() => { setShowPicker(false); setSelectedExerciseIds(new Set()); setSearchQuery(''); setActiveCategoryTab('all') }}
+                className="w-10 h-10 flex items-center justify-center rounded-full text-lg font-bold"
+                style={{ background: 'var(--bg-card2)', color: 'var(--text-secondary)' }}
+              >✕</button>
+              <h2 className="font-display text-xl text-white flex-1 text-center">운동 선택하기</h2>
+              <button
+                onClick={() => setShowAddExercise(true)}
+                className="text-sm font-bold px-3 py-1.5 rounded-lg"
+                style={{ background: 'var(--accent-dim)', color: 'var(--accent)' }}
+              >+ 직접 추가</button>
+            </div>
+
+            {/* 검색창 */}
+            <div className="px-4 pb-3">
+              <div className="flex items-center gap-2 px-4 rounded-2xl input-dark">
+                <span style={{ color: 'var(--text-dim)' }}>🔍</span>
+                <input
+                  type="text"
+                  placeholder="종목 검색..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="flex-1 bg-transparent text-white text-sm outline-none py-3 placeholder:text-gray-600"
+                />
+                {searchQuery.length > 0 && (
+                  <button onClick={() => setSearchQuery('')} style={{ color: 'var(--text-dim)' }}>✕</button>
+                )}
               </div>
             </div>
-            <div className="px-4 py-3 pb-10">
-              {Object.entries(grouped).map(([category, exList]) => {
-                const isExpanded = expandedCategory === category
-                return (
-                  <div key={category} className="mb-2">
-                    {/* 대분류 버튼 */}
-                    <button
-                      onClick={() => setExpandedCategory(isExpanded ? null : category)}
-                      className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-all"
-                      style={{
-                        background: isExpanded ? 'var(--accent)' : 'var(--bg-card)',
-                        color: isExpanded ? 'white' : 'var(--text-primary)'
-                      }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-xl">
-                          {category === 'legs' ? '🦵' :
-                           category === 'chest' ? '💪' :
-                           category === 'back' ? '🏋️' :
-                           category === 'shoulder' ? '🔝' :
-                           category === 'arm' ? '💪' :
-                           category === 'core' ? '⚡' : '🏃'}
-                        </span>
-                        <span className="font-bold text-base">{categoryLabel[category]}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs opacity-60">{exList.length}개</span>
-                        <span className="text-sm transition-transform"
-                          style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                          ▾
-                        </span>
-                      </div>
-                    </button>
 
-                    {/* 세부 목록 */}
-                    {isExpanded && (
-                      <div className="mt-1 grid grid-cols-2 gap-1.5 px-1">
-                        {exList.map(ex => (
-                          <div key={ex.id} className="relative">
-                            <button
-                              onClick={() => !deleteMode && addExercise(ex)}
-                              className="w-full text-left px-3 py-3 rounded-xl text-sm font-medium active:scale-95 transition-transform break-keep line-clamp-2"
-                              style={{
-                                background: deleteMode ? 'rgba(239,68,68,0.08)' : 'var(--bg-card2)',
-                                color: 'var(--text-primary)',
-                                paddingRight: deleteMode ? '2rem' : '0.75rem'
-                              }}
-                            >
-                              {ex.name}
-                            </button>
-                            {deleteMode && (
-                              <button
-                                onClick={async (e) => {
-                                  e.stopPropagation()
-                                  if (!confirm(`'${ex.name}' 종목과 관련된 모든 기록이 삭제됩니다. 계속할까요?`)) return
-                                  await supabase.from('workout_sets').delete().eq('exercise_id', ex.id)
-                                  await supabase.from('exercises').delete().eq('id', ex.id)
-                                  await fetchExercises()
-                                }}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded text-xs"
-                                style={{ color: '#ef4444', background: 'rgba(239,68,68,0.15)' }}
-                              >✕</button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
+            {/* 카테고리 탭 */}
+            <div className="flex gap-2 px-4 pb-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+              {['all', ...categoryOrder].map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategoryTab(cat)}
+                  className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all"
+                  style={{
+                    background: activeCategoryTab === cat ? 'var(--accent)' : 'var(--bg-card2)',
+                    color: activeCategoryTab === cat ? 'white' : 'var(--text-secondary)'
+                  }}
+                >
+                  {cat === 'all' ? '전체' : categoryLabel[cat]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 종목 리스트 */}
+          <div className="flex-1 overflow-y-auto px-4 space-y-1 pb-4">
+            {filteredExercises.length === 0 && (
+              <div className="flex flex-col items-center justify-center h-40 gap-2">
+                <span className="text-3xl">🔍</span>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>검색 결과가 없습니다</p>
+              </div>
+            )}
+            {filteredExercises.map(ex => {
+              const isSelected = selectedExerciseIds.has(ex.id)
+              const isBookmarked = bookmarkedIds.has(ex.id)
+              return (
+                <div
+                  key={ex.id}
+                  onClick={() => toggleSelectExercise(ex.id)}
+                  className="flex items-center gap-3 px-3 py-3 rounded-2xl active:scale-[0.99] transition-all cursor-pointer"
+                  style={{
+                    background: isSelected ? 'var(--accent-dim)' : 'var(--bg-card)',
+                    border: `1px solid ${isSelected ? 'var(--accent)' : 'transparent'}`
+                  }}
+                >
+                  {/* 체크박스 */}
+                  <div
+                    className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition-all"
+                    style={{
+                      background: isSelected ? 'var(--accent)' : 'transparent',
+                      border: isSelected ? 'none' : '1.5px solid #555'
+                    }}
+                  >
+                    {isSelected && <span className="text-xs text-white font-bold">✓</span>}
+                  </div>
+
+                  {/* 이미지 or 이모지 아이콘 */}
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
+                    style={{ background: 'var(--bg-card2)' }}
+                  >
+                    {ex.image_url ? (
+                      <img
+                        src={ex.image_url}
+                        alt={ex.name}
+                        className="w-full h-full object-contain"
+                        style={{ filter: 'invert(1) grayscale(100%) brightness(0.7) contrast(1.2)', mixBlendMode: 'screen' }}
+                      />
+                    ) : (
+                      <span className="text-xl">{categoryEmoji[ex.category] || '🏋️'}</span>
                     )}
                   </div>
-                )
-              })}
-            </div>
+
+                  {/* 종목명 */}
+                  <span className="flex-1 text-white font-medium text-sm break-keep line-clamp-2">{ex.name}</span>
+
+                  {/* 상세 버튼 */}
+                  <button
+                    onClick={e => { e.stopPropagation(); setDetailExercise(ex) }}
+                    className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-base transition-colors"
+                    style={{ color: 'var(--text-dim)' }}
+                  >ⓘ</button>
+
+                  {/* 북마크 버튼 */}
+                  <button
+                    onClick={e => { e.stopPropagation(); toggleBookmark(ex.id) }}
+                    className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-lg transition-colors"
+                    style={{ color: isBookmarked ? '#facc15' : 'var(--text-dim)' }}
+                  >
+                    {isBookmarked ? '★' : '☆'}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* 하단 고정 버튼 */}
+          <div
+            className="flex-shrink-0 px-4 pt-3"
+            style={{ borderTop: '1px solid var(--border)', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+          >
+            <button
+              onClick={handleAddSelected}
+              disabled={selectedExerciseIds.size === 0}
+              className="w-full py-4 text-base font-bold rounded-2xl transition-all"
+              style={{
+                background: selectedExerciseIds.size > 0 ? 'var(--accent)' : 'var(--bg-card2)',
+                color: selectedExerciseIds.size > 0 ? 'white' : 'var(--text-dim)',
+                cursor: selectedExerciseIds.size > 0 ? 'pointer' : 'not-allowed'
+              }}
+            >
+              {selectedExerciseIds.size > 0 ? `${selectedExerciseIds.size}개 추가하기` : '운동을 선택해주세요'}
+            </button>
           </div>
         </div>
       )}
@@ -591,7 +673,9 @@ export default function WorkoutTabPage() {
               <option value="shoulder">어깨</option>
               <option value="arm">팔</option>
               <option value="core">코어</option>
+              <option value="weightlifting">역도</option>
               <option value="cardio">유산소</option>
+              <option value="etc">기타</option>
             </select>
 
             <div className="flex gap-3">
@@ -609,6 +693,9 @@ export default function WorkoutTabPage() {
             </div>
           </div>
         </div>
+      )}
+      {detailExercise && (
+        <ExerciseDetailModal exercise={detailExercise} onClose={() => setDetailExercise(null)} />
       )}
       {showRestTimer && (
         <RestTimer onClose={() => setShowRestTimer(false)} />
