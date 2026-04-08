@@ -36,7 +36,10 @@ export default function WorkoutTabPage() {
 const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategoryTab, setActiveCategoryTab] = useState('all')
-  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set())
+  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('bookmarkedExercises') || '[]') } catch { return [] }
+  })
+  const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false)
   const [detailExercise, setDetailExercise] = useState<Exercise | null>(null)
   const startedAt = useRef<Date>(new Date())
   const timerRef = useRef<any>(null)
@@ -212,8 +215,8 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
 
   const toggleBookmark = (id: string) => {
     setBookmarkedIds(prev => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+      localStorage.setItem('bookmarkedExercises', JSON.stringify(next))
       return next
     })
   }
@@ -330,7 +333,8 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
   const filteredExercises = exercises.filter(ex => {
     const matchesSearch = ex.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = activeCategoryTab === 'all' || ex.category === activeCategoryTab
-    return matchesSearch && matchesCategory
+    const matchesBookmark = !showBookmarkedOnly || bookmarkedIds.includes(ex.id)
+    return matchesSearch && matchesCategory && matchesBookmark
   })
 
   // 운동 시작 전 화면
@@ -576,7 +580,7 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
             </div>
 
             {/* 카테고리 탭 */}
-            <div className="flex gap-2 px-4 pb-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+            <div className="flex gap-2 px-4 pb-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
               {['all', ...categoryOrder].map(cat => (
                 <button
                   key={cat}
@@ -591,6 +595,19 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
                 </button>
               ))}
             </div>
+            {/* 즐겨찾기 토글 */}
+            <div className="px-4 pb-3">
+              <button
+                onClick={() => setShowBookmarkedOnly(prev => !prev)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all"
+                style={{
+                  background: showBookmarkedOnly ? '#facc15' : 'var(--bg-card2)',
+                  color: showBookmarkedOnly ? '#000' : 'var(--text-secondary)'
+                }}
+              >
+                ⭐ 즐겨찾기만
+              </button>
+            </div>
           </div>
 
           {/* 종목 리스트 */}
@@ -603,7 +620,7 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
             )}
             {filteredExercises.map(ex => {
               const isSelected = selectedExerciseIds.has(ex.id)
-              const isBookmarked = bookmarkedIds.has(ex.id)
+              const isBookmarked = bookmarkedIds.includes(ex.id)
               return (
                 <div
                   key={ex.id}
