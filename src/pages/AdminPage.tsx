@@ -103,7 +103,7 @@ export default function AdminPage() {
       </div>
 
       {/* 카테고리 탭 */}
-      <div className="flex gap-2 overflow-x-auto pb-4 -mx-4 px-4" style={{ scrollbarWidth: 'none' }}>
+      <div className="flex gap-2 overflow-x-auto pb-4" style={{ scrollbarWidth: 'none', marginLeft: '-1rem', marginRight: '-1rem', paddingLeft: '1rem', paddingRight: '1rem', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
         {['all', ...categoryOrder].map(cat => (
           <button
             key={cat}
