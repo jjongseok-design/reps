@@ -47,7 +47,12 @@ export default function AdminPage() {
       .from('Exercise-images')
       .getPublicUrl(filename)
 
-    await supabase.from('exercises').update({ image_url: publicUrl }).eq('id', exerciseId)
+    const { error: updateError } = await supabase.from('exercises').update({ image_url: publicUrl }).eq('id', exerciseId)
+    if (updateError) {
+      alert('DB 업데이트 실패: ' + updateError.message)
+      setUploading(null)
+      return
+    }
     await fetchExercises()
     setUploading(null)
   }
