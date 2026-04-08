@@ -103,23 +103,21 @@ export default function AdminPage() {
       </div>
 
       {/* 카테고리 탭 */}
-      <div className="flex gap-2 overflow-x-auto pb-4" style={{ scrollbarWidth: 'none', marginLeft: '-1rem', marginRight: '-1rem', paddingLeft: '1rem', paddingRight: '1rem', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+      <div className="flex gap-1 pb-4 flex-wrap">
         {['all', ...categoryOrder].map(cat => (
           <button
             key={cat}
             onClick={() => setActiveCategory(cat)}
-            className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all"
+            className="flex-shrink-0 px-2 py-1 rounded-full font-bold transition-all"
             style={{
+              fontSize: '10px',
               background: activeCategory === cat ? 'var(--accent)' : 'var(--bg-card2)',
               color: activeCategory === cat ? 'white' : 'var(--text-secondary)'
             }}
           >
-            {cat === 'all'
-              ? `전체 (${exercises.length})`
-              : `${categoryLabel[cat]} (${exercises.filter(e => e.category === cat).length})`}
+            {cat === 'all' ? '전체' : categoryLabel[cat]}
           </button>
         ))}
-        <span className="flex-shrink-0 w-4" />
       </div>
 
       {/* 종목 목록 */}
