@@ -43,11 +43,31 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
   const [detailExercise, setDetailExercise] = useState<Exercise | null>(null)
   const startedAt = useRef<Date>(new Date())
   const timerRef = useRef<any>(null)
+  const initialized = useRef(false)
 
   useEffect(() => {
     fetchExercises()
     checkInProgressSession()
   }, [])
+
+  // entries 변경 시 자동 저장 (초기 로드 후부터)
+  useEffect(() => {
+    if (!initialized.current || !sessionId) return
+    const timer = setTimeout(async () => {
+      await supabase.from('workout_sets').delete().eq('session_id', sessionId)
+      const allSets = entries.flatMap((entry) =>
+        entry.sets.map((set, si) => ({
+          session_id: sessionId,
+          exercise_id: entry.exercise.id,
+          set_number: si + 1,
+          weight_kg: set.weight_kg,
+          reps: set.reps,
+        }))
+      )
+      if (allSets.length > 0) await supabase.from('workout_sets').insert(allSets)
+    }, 800)
+    return () => clearTimeout(timer)
+  }, [entries])
 
   const checkInProgressSession = async () => {
     const { data } = await supabase
@@ -86,6 +106,7 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
       })
       setEntries(Object.values(grouped))
     }
+    initialized.current = true
   }
 
   const fetchExercises = async () => {
@@ -154,6 +175,7 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
         setIsActive(true)
         startedAt.current = new Date()
         setEntries([])
+        initialized.current = true
         startTimer()
       }
     }
@@ -311,6 +333,7 @@ const [selectedExerciseIds, setSelectedExerciseIds] = useState<Set<string>>(new 
       .update({ ended_at: new Date().toISOString() })
       .eq('id', sessionId)
     if (timerRef.current) clearInterval(timerRef.current)
+    initialized.current = false
     setIsActive(false)
     setSessionId(null)
     setEntries([])
