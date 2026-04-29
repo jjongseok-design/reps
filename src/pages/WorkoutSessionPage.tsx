@@ -26,6 +26,7 @@ export default function WorkoutSessionPage() {
   const [showPicker, setShowPicker] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const startedAt = useRef<Date>(new Date())
+  const initialized = useRef(false)
 
   useEffect(() => {
     fetchSession()
@@ -35,6 +36,25 @@ export default function WorkoutSessionPage() {
     }, 1000)
     return () => clearInterval(timer)
   }, [id])
+
+  // entries가 변경될 때마다 자동 저장 (초기 로드 후부터)
+  useEffect(() => {
+    if (!initialized.current) return
+    const timer = setTimeout(async () => {
+      await supabase.from('workout_sets').delete().eq('session_id', id)
+      const allSets = entries.flatMap((entry) =>
+        entry.sets.map((set, si) => ({
+          session_id: id,
+          exercise_id: entry.exercise.id,
+          set_number: si + 1,
+          weight_kg: set.weight_kg,
+          reps: set.reps,
+        }))
+      )
+      if (allSets.length > 0) await supabase.from('workout_sets').insert(allSets)
+    }, 800)
+    return () => clearTimeout(timer)
+  }, [entries])
 
   const fetchSession = async () => {
     const { data: session } = await supabase
@@ -66,6 +86,7 @@ export default function WorkoutSessionPage() {
       })
       setEntries(Object.values(grouped))
     }
+    initialized.current = true
   }
 
   const fetchExercises = async () => {
