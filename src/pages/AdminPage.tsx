@@ -10,7 +10,7 @@ const CATEGORY_LABEL: Record<string, string> = {
 
 type ExerciseForm = {
   name: string
-  category: string
+  category: Exercise['category']
   measure_type: 'reps' | 'time'
   calories_per_kg_rep: number
   sort_order: number
