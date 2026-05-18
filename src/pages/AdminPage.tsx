@@ -52,14 +52,15 @@ export default function AdminPage() {
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
   }
 
-  // ── 이미지 압축 (GIF 제외, 최대 800px, WebP 변환) ────────────────────────────
-  const compressImage = (file: File): Promise<Blob> =>
+  // ── 대용량 파일만 빠르게 리사이즈 (1MB 초과, GIF 제외, JPEG 변환) ─────────────
+  const resizeIfLarge = (file: File): Promise<Blob | File> =>
     new Promise((resolve) => {
+      if (file.type === 'image/gif' || file.size <= 1024 * 1024) { resolve(file); return }
       const img = new Image()
       const url = URL.createObjectURL(file)
       img.onload = () => {
         URL.revokeObjectURL(url)
-        const MAX = 800
+        const MAX = 1200
         let { width, height } = img
         if (width > MAX || height > MAX) {
           if (width > height) { height = Math.round((height / width) * MAX); width = MAX }
@@ -68,7 +69,7 @@ export default function AdminPage() {
         const canvas = document.createElement('canvas')
         canvas.width = width; canvas.height = height
         canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
-        canvas.toBlob(blob => resolve(blob!), 'image/webp', 0.85)
+        canvas.toBlob(blob => resolve(blob!), 'image/jpeg', 0.82)
       }
       img.src = url
     })
@@ -103,9 +104,7 @@ export default function AdminPage() {
     setUploading(exerciseId)
     setUploadProgress(0)
 
-    // GIF 외 이미지는 압축 후 업로드
-    const isGif = ext === 'gif'
-    const uploadFile = isGif ? file : await compressImage(file)
+    const uploadFile = await resizeIfLarge(file)
 
     const timestamp = String(Math.round(Date.now() / 1000))
     const publicId  = `exercise-images/${exerciseId}`
